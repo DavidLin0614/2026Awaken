@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>營會終極總控台</title>
+    <link rel="stylesheet" href="style.css"> <!-- 借用我們原本漂亮的背景跟格子 -->
+    <style>
+        /* 總控台專屬的微調設計 */
+        .control-panel { background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .btn { padding: 12px 20px; font-size: 1.1em; border-radius: 5px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; }
+        .btn:hover { filter: brightness(1.2); }
+        .btn-score { background: #f39c12; color: white; }
+        .btn-export { background: #27ae60; color: white; }
+        .btn-toggle { background: #e74c3c; color: white; }
+        .btn-toggle-screen { background: #8e44ad; color: white; }
+        
+        /* 覆蓋原本置中的文字，讓清單靠左 */
+        .station-card { text-align: left; }
+        .station-title { text-align: center; }
+        .record-list { list-style: none; padding: 0; margin: 0; font-size: 0.9em; }
+        .record-list li { background: rgba(255,255,255,0.1); margin-bottom: 8px; padding: 8px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .record-info { line-height: 1.4; }
+        .timestamp { font-size: 0.8em; color: #aaa; }
+        
+        /* 編輯與刪除按鈕 */
+        .action-btns button { border: none; padding: 5px 8px; border-radius: 3px; cursor: pointer; color: white; font-weight: bold; }
+        .edit-btn { background: #3498db; margin-right: 5px; }
+        .del-btn { background: #ff4d4d; }
+        
+        /* 收合選單設計 */
+        details { margin-top: 10px; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 5px; cursor: pointer; }
+        summary { color: #ffd700; font-weight: bold; outline: none; }
+        .btn-danger { background: #c0392b; color: white; }
+    </style>
+</head>
+<body>
+    <h1 style="margin-bottom: 10px;">👑 營會終極總控台 👑</h1>
+    
+    <!-- 最高權限控制面板 -->
+    <div class="control-panel">
+        <button class="btn btn-score" id="calcScoreBtn">🏆 結算營會總成績</button>
+        <button class="btn btn-export" id="exportBtn">📊 匯出全部資料 (CSV)</button>
+        <button class="btn btn-toggle" id="lockSystemBtn">🔒 關閉輸入 (讀取中...)</button>
+        <button class="btn btn-toggle-screen" id="hideScreenBtn">📺 隱藏大螢幕 (讀取中...)</button>
+        <button class="btn btn-danger" id="clearAllBtn">💣 一鍵清空</button>
+    </div>
+
+    <!-- 15關的詳細資料，由 JS 自動生成 -->
+    <div class="grid-container" id="dashboardBoard">
+        <!-- 資料載入中... -->
+    </div>
+
+    <script type="module" src="dashboard.js"></script>
+</body>
+</html>

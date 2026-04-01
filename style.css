@@ -1,0 +1,46 @@
+/* 設定整個網頁的背景與基本字體 */
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: "微軟正黑體", sans-serif;
+    /* 這裡就是呼叫你的背景圖，設定填滿且不重複 */
+    background-image: url('bg.jpg'); 
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    /* 讓字體變白色，並加上黑色陰影，避免背景太花看不到字 */
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* 讓大標題置中 */
+h1 {
+    text-align: center;
+    font-size: 3em;
+}
+
+/* 這是用來裝 15 個關卡的「大容器」 */
+.grid-container {
+    display: grid;
+    /* 這裡設定一排有 5 個格子，你可以隨時改 */
+    grid-template-columns: repeat(5, 1fr); 
+    gap: 15px; /* 格子之間的間距 */
+    max-width: 1200px;
+    margin: 0 auto; /* 讓整個容器置中 */
+}
+
+/* 這是每一個「關卡卡片」的外觀 */
+.station-card {
+    background-color: rgba(0, 0, 0, 0.6); /* 半透明黑色的底，讓字更清楚 */
+    padding: 15px;
+    border-radius: 10px; /* 圓角 */
+    border: 2px solid #ffd700; /* 金色的邊框 */
+    text-align: center;
+}
+
+.station-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #ffd700; /* 金色字體 */
+    margin-bottom: 10px;
+}

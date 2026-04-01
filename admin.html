@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>關主輸入後台</title>
+    <style>
+        /* 專門為手機設計的簡單樣式 */
+        body { font-family: "微軟正黑體", sans-serif; background-color: #f4f4f9; padding: 20px; text-align: center; }
+        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; }
+        h1 { color: #333; }
+        .station-badge { background-color: #ff5722; color: white; padding: 5px 15px; border-radius: 20px; font-size: 1.2em; font-weight: bold; display: inline-block; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        select, input { width: 100%; padding: 10px; font-size: 1.1em; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .time-inputs { display: flex; gap: 10px; }
+        button { background-color: #4CAF50; color: white; border: none; padding: 15px; width: 100%; font-size: 1.2em; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        button:hover { background-color: #45a049; }
+        /* 這是新增的排行榜樣式 */
+        .record-item { display: flex; justify-content: space-between; background: #eee; padding: 10px; margin-bottom: 8px; border-radius: 5px; align-items: center; text-align: left; }
+        .delete-btn { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.9em; width: auto; margin: 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 這裡的數字會被程式自動替換 -->
+        <div class="station-badge" id="stationDisplay">正在載入關卡...</div>
+        
+        <div class="form-group">
+            <label>選擇闖關隊伍：</label>
+            <select id="teamSelect">
+                <!-- 防呆下拉選單，不用自己打字 -->
+                <option value="第1隊">第1隊</option>
+                <option value="第2隊">第2隊</option>
+                <option value="第3隊">第3隊</option>
+                <option value="第4隊">第4隊</option>
+                <option value="第5隊">第5隊</option>
+                <option value="第6隊">第6隊</option>
+                <option value="第7隊">第7隊</option>
+                <option value="第8隊">第8隊</option>
+                <option value="第9隊">第9隊</option>
+                <option value="第10隊">第10隊</option>
+                <option value="第11隊">第11隊</option>
+                <option value="第12隊">第12隊</option>
+                <option value="第13隊">第13隊</option>
+                <option value="第14隊">第14隊</option>
+                <option value="第15隊">第15隊</option>
+                <!-- 你之後可以自己把15隊補齊 -->
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>花費時間：</label>
+            <div class="time-inputs">
+                <input type="number" id="minInput" placeholder="分" min="0">
+                <input type="number" id="secInput" placeholder="秒" min="0" max="59">
+            </div>
+        </div>
+
+        <button id="submitBtn">送出成績 🚀</button>
+        <!-- 這是新增的：本關專屬排行榜 -->
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
+        <h3 style="margin-top: 0;">本關目前排行榜 🏆</h3>
+        <div id="stationLeaderboard">
+            <!-- 排名清單會自動長在這裡 -->
+            <p style="color: #888;">目前尚無成績</p>
+        </div>
+    </div>
+
+    <!-- 連接我們即將寫的控制程式 -->
+    <script type="module" src="admin.js"></script>
+</body>
+</html>
