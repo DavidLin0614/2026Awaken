@@ -24,9 +24,8 @@ function formatTime(totalSeconds) {
 // 📺 接收總控台的「隱藏大螢幕」訊號
 // ==========================================
 const hideOverlay = document.createElement('div');
-// 🌟 加入了 text-align: center (置中對齊) 與 clamp(響應式縮放字體) 魔法
-hideOverlay.style = "display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); color:#ffd700; z-index:9999; flex-direction:column; justify-content:center; align-items:center; font-size: clamp(2.5rem, 8vw, 4rem); font-weight:bold; text-align:center; padding:20px; box-sizing:border-box; text-shadow: 2px 2px 10px rgba(0,0,0,1); backdrop-filter: blur(10px); line-height: 1.4;";
-hideOverlay.innerHTML = "🏆<br>營會成績結算中<br><span style='font-size:0.5em; color:white; display:block; margin-top:15px;'>敬請期待最高榮耀</span>";
+hideOverlay.id = "hideOverlay"; // 🌟 把它的 ID 綁定到我們剛剛在 CSS 寫好的設計
+hideOverlay.innerHTML = "🏆<br>營會成績結算中<br><span>敬請期待最高榮耀</span>";
 document.body.appendChild(hideOverlay);
 
 onSnapshot(doc(db, "settings", "global"), (docSnap) => {
