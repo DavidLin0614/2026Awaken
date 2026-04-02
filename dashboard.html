@@ -7,28 +7,43 @@
     <link rel="stylesheet" href="style.css"> <!-- 借用我們原本漂亮的背景跟格子 -->
     <style>
         /* 總控台專屬的微調設計 */
-        /* 總控台專屬的微調設計 */
         .control-panel { 
             background: rgba(0,0,0,0.8); 
-            padding: 20px; 
+            padding: 15px; 
             border-radius: 10px; 
-            margin: 0 auto 20px auto; /* 讓它置中，並與下方保持距離 */
-            max-width: 1200px; /* 這裡！跟下方的格子設定一樣的寬度！ */
-            box-sizing: border-box; /* 避免 padding 把寬度撐破 */
+            margin: 0 auto 20px auto; 
+            width: 100%; 
+            max-width: 1200px; /* 🌟 確保黑底跟下方格子完美切齊 */
             display: flex; 
             gap: 10px; 
             justify-content: space-between; 
+            flex-wrap: wrap; /* 允許換行 */
         }
         
         .btn { 
-            flex: 1; /* 魔法在這裡！讓所有按鈕「平分」寬度 */
-            padding: 12px 5px; /* 手機版如果太擠，內邊距調小一點 */
-            font-size: 1.1em; 
+            flex: 1 1 30%; /* 讓按鈕自動伸縮等寬 */
+            padding: 12px 5px; 
+            font-size: 1em; 
             border-radius: 5px; 
             cursor: pointer; 
             border: none; 
             font-weight: bold; 
             transition: 0.2s; 
+            white-space: pre-line; /* 🌟 讓 \n 可以成功換行 */
+            line-height: 1.4; 
+        }
+        .btn:hover { filter: brightness(1.2); }
+        .btn-score { background: #f39c12; color: white; }
+        .btn-export { background: #27ae60; color: white; }
+        .btn-toggle { background: #e74c3c; color: white; }
+        .btn-toggle-screen { background: #8e44ad; color: white; }
+        .btn-danger { background: #c0392b; color: white; }
+
+        /* 🌟 針對總控台的特殊手機優化 */
+        @media (max-width: 768px) {
+            .btn { flex: 1 1 45%; font-size: 0.9em; }
+            /* 因為總控台資訊有「改、刪、時間」，手機如果擠 2 關會被切斷，所以總控台強制手機 1 排 1 關 */
+            #dashboardBoard { grid-template-columns: 1fr; }
         }
         .btn:hover { filter: brightness(1.2); }
         .btn-score { background: #f39c12; color: white; }
@@ -81,11 +96,11 @@
     <div class="control-panel">
         <button class="btn btn-score" id="calcScoreBtn">🏆 結算營會總成績</button>
         <button class="btn btn-export" id="exportBtn">📊 匯出全部資料 (CSV)</button>
-        <button class="btn btn-toggle" id="lockSystemBtn">🔒 關閉輸入 (讀取中...)</button>
-        <button class="btn btn-toggle-screen" id="hideScreenBtn">📺 隱藏大螢幕 (讀取中...)</button>
+        <!-- 🌟 用 &#10; 或 <br> 來強制換行 -->
+        <button class="btn btn-toggle" id="lockSystemBtn">🔒 關閉輸入<br>(目前：開放中)</button>
+        <button class="btn btn-toggle-screen" id="hideScreenBtn">🙈 隱藏大螢幕<br>(目前：正常顯示)</button>
         <button class="btn btn-danger" id="clearAllBtn">💣 一鍵清空</button>
     </div>
-
     <!-- 15關的詳細資料，由 JS 自動生成 -->
     <div class="grid-container" id="dashboardBoard">
         <!-- 資料載入中... -->

@@ -1,79 +1,80 @@
-/* 設定整個網頁的背景與基本字體 */
+/* ========================================== */
+/* 基礎設定與背景 */
+/* ========================================== */
+* {
+    /* 這個神器能確保所有的 padding 都不會把寬度撐破螢幕 */
+    box-sizing: border-box; 
+}
+
 body {
     margin: 0;
-    padding: 20px;
+    padding: 10px; /* 手機版讓邊緣窄一點，畫面更大 */
     font-family: "微軟正黑體", sans-serif;
-    /* 這裡就是呼叫你的背景圖，設定填滿且不重複 */
     background-image: url('bg.jpg'); 
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
-    /* 讓字體變白色，並加上黑色陰影，避免背景太花看不到字 */
     color: white;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
-/* 讓大標題置中 */
 h1 {
     text-align: center;
-    font-size: 3em;
+    font-size: 2.5em;
+    margin-top: 10px;
 }
 
 /* ========================================== */
-/* 這是修改過的容器與卡片外觀 */
+/* 格子排版系統 (RWD 響應式) */
 /* ========================================== */
-
-/* 用來裝 15 個關卡的「大容器」 (預設給手機看：1排2個) */
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 手機版預設 2 欄 */
-    gap: 15px;
+    grid-template-columns: repeat(2, 1fr); /* 手機版預設 1排2個 */
+    gap: 12px;
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto; 
 }
 
-/* 每一個「關卡卡片」的外觀 */
 .station-card {
     background-color: rgba(0, 0, 0, 0.6); 
-    padding: 15px;
+    padding: 10px;
     border-radius: 10px; 
     border: 2px solid #ffd700; 
     text-align: center;
-    /* 新增：讓卡片固定最小高度，且內容垂直均勻分佈 */
     display: flex;
     flex-direction: column;
+    justify-content: center; /* 🌟 魔法：讓內容垂直置中！解決下方太空的問題 */
     min-height: 180px; 
-}
-
-/* 新增：鎖死文字不換行，解決第9隊被切斷的問題 */
-.station-card p, .record-list li {
-    white-space: nowrap; /* 絕對不換行 */
-    overflow: hidden;    /* 超過的部分隱藏 */
-    text-overflow: ellipsis; /* 如果真的太長，顯示... */
-    margin: 5px 0;
+    width: 100%;
 }
 
 .station-title {
-    font-size: 1.5em;
+    font-size: 1.4em;
     font-weight: bold;
     color: #ffd700; 
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+/* 🌟 放大字體，且絕對不換行 */
+.station-card p, .record-list li {
+    white-space: nowrap; 
+    overflow: hidden;    
+    text-overflow: ellipsis; 
+    margin: 8px 0; 
+    font-size: 1.1em; /* 字體稍微放大，填滿空間 */
 }
 
 /* ========================================== */
-/* 🌟 RWD 響應式魔法：根據螢幕寬度自動變形 */
+/* 電腦與平板的適應性調整 */
 /* ========================================== */
-
-/* 當螢幕寬度大於 768px (平板電腦) 時，變成 1排3個 */
 @media (min-width: 768px) {
-    .grid-container {
-        grid-template-columns: repeat(3, 1fr);
-    }
+    body { padding: 20px; }
+    h1 { font-size: 3em; }
+    .grid-container { grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .station-card { padding: 15px; font-size: 1.1em; }
 }
 
-/* 當螢幕寬度大於 1024px (一般電腦螢幕) 時，變成 1排5個 */
 @media (min-width: 1024px) {
-    .grid-container {
-        grid-template-columns: repeat(5, 1fr);
-    }
+    .grid-container { grid-template-columns: repeat(5, 1fr); }
 }

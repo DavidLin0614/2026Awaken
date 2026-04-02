@@ -159,24 +159,17 @@ const systemDocRef = doc(db, "settings", "global");
 
 onSnapshot(systemDocRef, (docSnap) => {
     let state = docSnap.exists() ? docSnap.data() : { isLocked: false, hideMain: false };
-    window.systemState = state; // 存到全域變數供按鈕使用
+    window.systemState = state; 
 
-    // 根據狀態改變按鈕文字和顏色
     const lockBtn = document.getElementById('lockSystemBtn');
-    lockBtn.innerText = state.isLocked ? "🔓 開放輸入 (目前：鎖定中)" : "🔒 關閉輸入 (目前：開放中)";
+    // 🌟 加入 \n 強制在括號前換行
+    lockBtn.innerText = state.isLocked ? "🔓 開放輸入\n(目前：鎖定中)" : "🔒 關閉輸入\n(目前：開放中)";
     lockBtn.style.background = state.isLocked ? "#27ae60" : "#e74c3c";
 
     const hideBtn = document.getElementById('hideScreenBtn');
-    hideBtn.innerText = state.hideMain ? "📺 恢復大螢幕 (目前：結算隱藏中)" : "🙈 隱藏大螢幕 (目前：正常顯示)";
+    // 🌟 加入 \n 強制在括號前換行
+    hideBtn.innerText = state.hideMain ? "📺 恢復大螢幕\n(目前：結算隱藏中)" : "🙈 隱藏大螢幕\n(目前：正常顯示)";
     hideBtn.style.background = state.hideMain ? "#27ae60" : "#8e44ad";
-});
-
-document.getElementById('lockSystemBtn').addEventListener('click', async () => {
-    await setDoc(systemDocRef, { isLocked: !window.systemState.isLocked }, { merge: true });
-});
-
-document.getElementById('hideScreenBtn').addEventListener('click', async () => {
-    await setDoc(systemDocRef, { hideMain: !window.systemState.hideMain }, { merge: true });
 });
 
 // ==========================================
