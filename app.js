@@ -23,19 +23,11 @@ function formatTime(totalSeconds) {
 // ==========================================
 // 📺 接收總控台的「隱藏大螢幕」訊號
 // ==========================================
-// 先在網頁上動態建立一個「遮罩」
 const hideOverlay = document.createElement('div');
-hideOverlay.style = "display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); color:#ffd700; z-index:9999; flex-direction:column; justify-content:center; align-items:center; font-size:4em; font-weight:bold; text-shadow: 2px 2px 10px rgba(0,0,0,1); backdrop-filter: blur(10px);";
-hideOverlay.innerHTML = "🏆<br>營會成績結算中<br><span style='font-size:0.4em; color:white;'>敬請期待最高榮耀</span>";
+// 🌟 加入了 text-align: center (置中對齊) 與 clamp(響應式縮放字體) 魔法
+hideOverlay.style = "display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); color:#ffd700; z-index:9999; flex-direction:column; justify-content:center; align-items:center; font-size: clamp(2.5rem, 8vw, 4rem); font-weight:bold; text-align:center; padding:20px; box-sizing:border-box; text-shadow: 2px 2px 10px rgba(0,0,0,1); backdrop-filter: blur(10px); line-height: 1.4;";
+hideOverlay.innerHTML = "🏆<br>營會成績結算中<br><span style='font-size:0.5em; color:white; display:block; margin-top:15px;'>敬請期待最高榮耀</span>";
 document.body.appendChild(hideOverlay);
-
-onSnapshot(doc(db, "settings", "global"), (docSnap) => {
-    if (docSnap.exists() && docSnap.data().hideMain) {
-        hideOverlay.style.display = "flex"; // 顯示遮罩
-    } else {
-        hideOverlay.style.display = "none"; // 隱藏遮罩
-    }
-});
 
 // ==========================================
 // 🌟 排行榜顯示 (加入「同隊取最佳成績」邏輯)
