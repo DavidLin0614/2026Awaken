@@ -7,8 +7,29 @@
     <link rel="stylesheet" href="style.css"> <!-- 借用我們原本漂亮的背景跟格子 -->
     <style>
         /* 總控台專屬的微調設計 */
-        .control-panel { background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-        .btn { padding: 12px 20px; font-size: 1.1em; border-radius: 5px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; }
+        /* 總控台專屬的微調設計 */
+        .control-panel { 
+            background: rgba(0,0,0,0.8); 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 0 auto 20px auto; /* 讓它置中，並與下方保持距離 */
+            max-width: 1200px; /* 這裡！跟下方的格子設定一樣的寬度！ */
+            box-sizing: border-box; /* 避免 padding 把寬度撐破 */
+            display: flex; 
+            gap: 10px; 
+            justify-content: space-between; 
+        }
+        
+        .btn { 
+            flex: 1; /* 魔法在這裡！讓所有按鈕「平分」寬度 */
+            padding: 12px 5px; /* 手機版如果太擠，內邊距調小一點 */
+            font-size: 1.1em; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            border: none; 
+            font-weight: bold; 
+            transition: 0.2s; 
+        }
         .btn:hover { filter: brightness(1.2); }
         .btn-score { background: #f39c12; color: white; }
         .btn-export { background: #27ae60; color: white; }
@@ -19,12 +40,27 @@
         .station-card { text-align: left; }
         .station-title { text-align: center; }
         .record-list { list-style: none; padding: 0; margin: 0; font-size: 0.9em; }
-        .record-list li { background: rgba(255,255,255,0.1); margin-bottom: 8px; padding: 8px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .record-list li { 
+            background: rgba(255,255,255,0.1); 
+            margin-bottom: 8px; 
+            padding: 8px; 
+            border-radius: 5px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
         .record-info { line-height: 1.4; }
         .timestamp { font-size: 0.8em; color: #aaa; }
         
         /* 編輯與刪除按鈕 */
-        .action-btns button { border: none; padding: 5px 8px; border-radius: 3px; cursor: pointer; color: white; font-weight: bold; }
+        .action-btns button { 
+            border: none; 
+            padding: 5px 8px; 
+            border-radius: 3px; 
+            cursor: pointer; 
+            color: white; 
+            font-weight: bold; 
+        }
         .edit-btn { background: #3498db; margin-right: 5px; }
         .del-btn { background: #ff4d4d; }
         
@@ -32,6 +68,10 @@
         details { margin-top: 10px; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 5px; cursor: pointer; }
         summary { color: #ffd700; font-weight: bold; outline: none; }
         .btn-danger { background: #c0392b; color: white; }
+        @media (max-width: 768px) {
+            .control-panel { flex-wrap: wrap; }
+            .btn { min-width: 45%; } /* 手機上按鈕變成兩兩一排 */
+        }
     </style>
 </head>
 <body>

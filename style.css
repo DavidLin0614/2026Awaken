@@ -19,28 +19,61 @@ h1 {
     font-size: 3em;
 }
 
-/* 這是用來裝 15 個關卡的「大容器」 */
+/* ========================================== */
+/* 這是修改過的容器與卡片外觀 */
+/* ========================================== */
+
+/* 用來裝 15 個關卡的「大容器」 (預設給手機看：1排2個) */
 .grid-container {
     display: grid;
-    /* 這裡設定一排有 5 個格子，你可以隨時改 */
-    grid-template-columns: repeat(5, 1fr); 
-    gap: 15px; /* 格子之間的間距 */
+    grid-template-columns: repeat(2, 1fr); /* 手機版預設 2 欄 */
+    gap: 15px;
     max-width: 1200px;
-    margin: 0 auto; /* 讓整個容器置中 */
+    margin: 0 auto; 
 }
 
-/* 這是每一個「關卡卡片」的外觀 */
+/* 每一個「關卡卡片」的外觀 */
 .station-card {
-    background-color: rgba(0, 0, 0, 0.6); /* 半透明黑色的底，讓字更清楚 */
+    background-color: rgba(0, 0, 0, 0.6); 
     padding: 15px;
-    border-radius: 10px; /* 圓角 */
-    border: 2px solid #ffd700; /* 金色的邊框 */
+    border-radius: 10px; 
+    border: 2px solid #ffd700; 
     text-align: center;
+    /* 新增：讓卡片固定最小高度，且內容垂直均勻分佈 */
+    display: flex;
+    flex-direction: column;
+    min-height: 180px; 
+}
+
+/* 新增：鎖死文字不換行，解決第9隊被切斷的問題 */
+.station-card p, .record-list li {
+    white-space: nowrap; /* 絕對不換行 */
+    overflow: hidden;    /* 超過的部分隱藏 */
+    text-overflow: ellipsis; /* 如果真的太長，顯示... */
+    margin: 5px 0;
 }
 
 .station-title {
     font-size: 1.5em;
     font-weight: bold;
-    color: #ffd700; /* 金色字體 */
+    color: #ffd700; 
     margin-bottom: 10px;
+}
+
+/* ========================================== */
+/* 🌟 RWD 響應式魔法：根據螢幕寬度自動變形 */
+/* ========================================== */
+
+/* 當螢幕寬度大於 768px (平板電腦) 時，變成 1排3個 */
+@media (min-width: 768px) {
+    .grid-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* 當螢幕寬度大於 1024px (一般電腦螢幕) 時，變成 1排5個 */
+@media (min-width: 1024px) {
+    .grid-container {
+        grid-template-columns: repeat(5, 1fr);
+    }
 }
