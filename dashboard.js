@@ -109,16 +109,20 @@ onSnapshot(collection(db, "record"), (snapshot) => {
 });
 
 // ==========================================
-// 2. 超強演算法：結算營會總成績！
+// 2. 結算營會總成績 (1~15隊排序並匯出 Excel)
 // ==========================================
 document.getElementById('calcScoreBtn').addEventListener('click', () => {
     let teamScores = {}; 
+
+    // 先幫 1~15 隊預設 0 分，確保沒玩到的隊伍也會出現在表上
+    for (let i = 1; i <= 15; i++) {
+        teamScores[`第${i}隊`] = 0;
+    }
 
     for (let i = 1; i <= 15; i++) {
         let stationRecords = globalRecords.filter(r => r.station === i);
         stationRecords.sort((a, b) => a.time_seconds - b.time_seconds);
 
-        // 同一隊在同一關如果玩兩次，只取最好的成績！
         let seenTeams = new Set();
         let uniqueRecords =[];
         stationRecords.forEach(r => {
@@ -128,9 +132,9 @@ document.getElementById('calcScoreBtn').addEventListener('click', () => {
             }
         });
 
-        // 依序給分：第一名300, 第二名200, 第三名100, 其他參加獎50
+        // 給分機制：第一名300, 第二名200, 第三名100, 其他50
         uniqueRecords.forEach((r, index) => {
-            if (!teamScores[r.team]) teamScores[r.team] = 0;
+            if (teamScores[r.team] === undefined) teamScores[r.team] = 0; // 防呆
             if (index === 0) teamScores[r.team] += 300;
             else if (index === 1) teamScores[r.team] += 200;
             else if (index === 2) teamScores[r.team] += 100;
@@ -138,22 +142,29 @@ document.getElementById('calcScoreBtn').addEventListener('click', () => {
         });
     }
 
-    // 轉換成陣列並從高分排到低分
+    // 將資料轉成陣列，並透過正規表達式提取「數字」來排序 (確保第2隊在第10隊前面)
     let finalRanking = Object.keys(teamScores).map(team => {
-        return { team: team, score: teamScores[team] };
+        let teamNum = parseInt(team.replace(/[^0-9]/g, '')) || 0;
+        return { team: team, teamNum: teamNum, score: teamScores[team] };
     });
-    finalRanking.sort((a, b) => b.score - a.score);
+    // 依照隊伍號碼 1 -> 15 排序
+    finalRanking.sort((a, b) => a.teamNum - b.teamNum);
 
-    // 顯示結果視窗
-    let msg = "🏆 2026 營會總冠軍排行榜 🏆\n========================\n\n";
-    finalRanking.forEach((item, index) => {
-        msg += `第 ${index + 1} 名：【${item.team}】 👉 ${item.score} 分\n`;
+    // 準備匯出 CSV
+    let csvContent = "\uFEFF隊伍名稱,營會總積分\n";
+    finalRanking.forEach(item => {
+        csvContent += `${item.team},${item.score}\n`;
     });
-    alert(msg);
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "2026營會_各隊總成績結算表.csv";
+    link.click();
 });
 
 // ==========================================
-// 3. 系統開關與權限控制 (鎖定與隱藏螢幕)
+// 3. 系統開關與權限控制 (修復版)
 // ==========================================
 const systemDocRef = doc(db, "settings", "global");
 
@@ -162,18 +173,27 @@ onSnapshot(systemDocRef, (docSnap) => {
     window.systemState = state; 
 
     const lockBtn = document.getElementById('lockSystemBtn');
-    // 🌟 加入 \n 強制在括號前換行
     lockBtn.innerText = state.isLocked ? "🔓 開放輸入\n(目前：鎖定中)" : "🔒 關閉輸入\n(目前：開放中)";
     lockBtn.style.background = state.isLocked ? "#27ae60" : "#e74c3c";
 
     const hideBtn = document.getElementById('hideScreenBtn');
-    // 🌟 加入 \n 強制在括號前換行
-    hideBtn.innerText = state.hideMain ? "📺 恢復大螢幕\n(目前：結算隱藏中)" : "🙈 隱藏大螢幕\n(目前：正常顯示)";
+    hideBtn.innerText = state.hideMain ? "📺 恢復大螢幕\n(目前：隱藏中)" : "🙈 隱藏大螢幕\n(目前：正常)";
     hideBtn.style.background = state.hideMain ? "#27ae60" : "#8e44ad";
 });
 
+// 加上 { merge: true } 確保如果檔案不存在會自動建立
+document.getElementById('lockSystemBtn').addEventListener('click', async () => {
+    let currentState = window.systemState ? window.systemState.isLocked : false;
+    await setDoc(systemDocRef, { isLocked: !currentState }, { merge: true });
+});
+
+document.getElementById('hideScreenBtn').addEventListener('click', async () => {
+    let currentState = window.systemState ? window.systemState.hideMain : false;
+    await setDoc(systemDocRef, { hideMain: !currentState }, { merge: true });
+});
+
 // ==========================================
-// 4. 匯出 Excel (跟之前一樣)
+// 4. 匯出 Excel (維持不變)
 // ==========================================
 document.getElementById('exportBtn').addEventListener('click', () => {
     if (globalRecords.length === 0) return alert("目前無資料！");
@@ -185,28 +205,21 @@ document.getElementById('exportBtn').addEventListener('click', () => {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "營會成績總表.csv";
+    link.download = "營會闖關細項流水帳.csv";
     link.click();
 });
 
 // ==========================================
-// 5. 核彈級功能：一鍵清空所有資料
+// 5. 核彈級功能：一鍵清空所有資料 (維持不變)
 // ==========================================
 document.getElementById('clearAllBtn').addEventListener('click', async () => {
-    // 終極防呆：要求輸入指定文字才能刪除，避免不小心按到
-    const check = prompt("⚠️ 警告！這將會永久刪除「所有」關卡的成績！\n如果你確定要清空，請在下方輸入「確認清空」：");
-    
+    const check = prompt("⚠️ 警告！這將會永久刪除「所有」關卡的成績！\n如果您確定要清空，請在下方輸入「確認清空」：");
     if (check === "確認清空") {
         document.getElementById('clearAllBtn').innerText = "🧹 瘋狂清除中...";
-        
-        // 用迴圈把 globalRecords 裡面的資料一筆一筆刪除
         for (let record of globalRecords) {
             await deleteDoc(doc(db, "record", record.id));
         }
-        
-        alert("✅ 所有測試資料已全部清空！我們準備好迎接正式營會了！");
-        document.getElementById('clearAllBtn').innerText = "💣 一鍵清空測試資料";
-    } else if (check !== null) {
-        alert("輸入錯誤，取消清空動作。");
+        alert("✅ 所有測試資料已全部清空！");
+        document.getElementById('clearAllBtn').innerText = "💣 一鍵清空";
     }
 });

@@ -87,6 +87,10 @@
             .control-panel { flex-wrap: wrap; }
             .btn { min-width: 45%; } /* 手機上按鈕變成兩兩一排 */
         }
+        
+        /* 覆蓋 style.css 的設定，讓總控台的內容從上往下排，並固定高度 */
+        .station-card { justify-content: flex-start !important; min-height: 420px; }
+        details { margin-top: auto; } /* 讓下拉選單永遠被推到卡片最底部，看起來會超整齊 */
     </style>
 </head>
 <body>
@@ -99,7 +103,7 @@
         <!-- 🌟 用 &#10; 或 <br> 來強制換行 -->
         <button class="btn btn-toggle" id="lockSystemBtn">🔒 關閉輸入<br>(目前：開放中)</button>
         <button class="btn btn-toggle-screen" id="hideScreenBtn">🙈 隱藏大螢幕<br>(目前：正常顯示)</button>
-        <button class="btn btn-danger" id="clearAllBtn">💣 一鍵清空</button>
+        <button class="btn btn-danger" id="clearAllBtn">💣 一鍵清空資料</button>
     </div>
     <!-- 15關的詳細資料，由 JS 自動生成 -->
     <div class="grid-container" id="dashboardBoard">
