@@ -29,6 +29,14 @@ hideOverlay.style = "display:none; position:fixed; top:0; left:0; width:100%; he
 hideOverlay.innerHTML = "🏆<br>營會成績結算中<br><span style='font-size:0.5em; color:white; display:block; margin-top:15px;'>敬請期待最高榮耀</span>";
 document.body.appendChild(hideOverlay);
 
+onSnapshot(doc(db, "settings", "global"), (docSnap) => {
+    if (docSnap.exists() && docSnap.data().hideMain) {
+        hideOverlay.style.display = "flex"; // 顯示遮罩
+    } else {
+        hideOverlay.style.display = "none"; // 隱藏遮罩
+    }
+});
+
 // ==========================================
 // 🌟 排行榜顯示 (加入「同隊取最佳成績」邏輯)
 // ==========================================
