@@ -118,3 +118,5 @@ details {
 /* 電腦與平板的適應性調整 */
 @media (min-width: 768px) { body { padding: 20px; } h1 { font-size: 3em; } .grid-container { grid-template-columns: repeat(3, 1fr); gap: 15px; } }
 @media (min-width: 1024px) { .grid-container { grid-template-columns: repeat(5, 1fr); } }
+
+summary { text-align: center; }
