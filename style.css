@@ -1,14 +1,11 @@
 /* ========================================== */
 /* 基礎設定與背景 */
 /* ========================================== */
-* {
-    /* 這個神器能確保所有的 padding 都不會把寬度撐破螢幕 */
-    box-sizing: border-box; 
-}
+* { box-sizing: border-box; }
 
 body {
     margin: 0;
-    padding: 10px; /* 手機版讓邊緣窄一點，畫面更大 */
+    padding: 10px; 
     font-family: "微軟正黑體", sans-serif;
     background-image: url('bg.jpg'); 
     background-size: cover;
@@ -18,97 +15,106 @@ body {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
-h1 {
-    text-align: center;
-    font-size: 2.5em;
-    margin-top: 10px;
-}
+h1 { text-align: center; font-size: 2.5em; margin-top: 10px; }
 
 /* ========================================== */
-/* 格子排版系統 (RWD 響應式) */
+/* 格子排版系統 (把寬度解鎖到 1600px，解決太擠的問題) */
 /* ========================================== */
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 手機版預設 1排2個 */
-    gap: 12px;
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 15px;
     width: 100%;
-    max-width: 1200px;
+    max-width: 1600px; /* 🌟 變寬了！ */
     margin: 0 auto; 
 }
 
+/* 🌟 自訂超細捲軸，才不會佔用卡片的寶貴空間 */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(255, 215, 0, 0.5); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 215, 0, 0.8); }
+
+/* ========================================== */
+/* 卡片外觀設定 */
+/* ========================================== */
 .station-card {
-    background-color: rgba(0, 0, 0, 0.6); 
-    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.7); 
+    padding: 15px;
     border-radius: 10px; 
     border: 2px solid #ffd700; 
     text-align: center;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* 🌟 魔法：讓內容垂直置中！解決下方太空的問題 */
+    justify-content: center; 
     min-height: 180px; 
     width: 100%;
+    position: relative;
 }
 
-.station-title {
-    font-size: 1.4em;
-    font-weight: bold;
-    color: #ffd700; 
-    margin-bottom: 12px;
-}
+.station-title { font-size: 1.4em; font-weight: bold; color: #ffd700; margin-bottom: 12px; }
 
-/* 🌟 放大字體，且絕對不換行 */
 .station-card p, .record-list li {
     white-space: nowrap; 
     overflow: hidden;    
     text-overflow: ellipsis; 
     margin: 8px 0; 
-    font-size: 1.1em; /* 字體稍微放大，填滿空間 */
+    font-size: 1.1em; 
 }
 
 /* ========================================== */
-/* 電腦與平板的適應性調整 */
+/* 🌟 總控台卡片專屬覆蓋 (解決跑版、固定高度) */
 /* ========================================== */
-@media (min-width: 768px) {
-    body { padding: 20px; }
-    h1 { font-size: 3em; }
-    .grid-container { grid-template-columns: repeat(3, 1fr); gap: 15px; }
-    .station-card { padding: 15px; font-size: 1.1em; }
+.dashboard-card {
+    justify-content: flex-start !important; 
+    height: 420px; /* 絕對固定高度，不會被撐破 */
+    overflow-y: auto; /* 內容超過自己產生卷軸 */
+    display: block; /* 取消 flex 讓排版更穩定 */
 }
 
-@media (min-width: 1024px) {
-    .grid-container { grid-template-columns: repeat(5, 1fr); }
+/* 讓「查看其他成績」乖乖接在第三名下面 */
+details { 
+    margin-top: 15px; 
+    background: rgba(0,0,0,0.4); 
+    padding: 10px; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    text-align: left;
 }
+
+/* ========================================== */
+/* ⚙️ 設定面板 (Modal 模態視窗) 樣式 */
+/* ========================================== */
+.modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px);
+}
+.modal-content {
+    background: #2c3e50; color: white; padding: 25px; border-radius: 10px; width: 95%; max-width: 600px; 
+    max-height: 90vh; overflow-y: auto; text-shadow: none; border: 2px solid #ffd700;
+}
+.modal-content h2 { margin-top: 0; color: #ffd700; border-bottom: 1px solid #7f8c8d; padding-bottom: 10px; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #ecf0f1; }
+.form-group input, .form-group select { 
+    width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #bdc3c7; background: #ecf0f1; color: #2c3e50; font-weight: bold;
+}
+.form-row { display: flex; gap: 10px; }
+.form-row .form-group { flex: 1; }
+.modal-btns { display: flex; gap: 10px; margin-top: 20px; }
 
 /* ========================================== */
 /* 隱藏大螢幕的專屬遮罩 */
 /* ========================================== */
 #hideOverlay {
-    display: none; /* 預設隱藏 */
-    position: fixed; 
-    top: 0; left: 0; 
-    width: 100%; height: 100%; 
-    background: rgba(0, 0, 0, 0.95); 
-    color: #ffd700; 
-    z-index: 9999; 
-    flex-direction: column; 
-    justify-content: center; 
-    align-items: center; 
-    
-    /* 🌟 響應式魔法全開 */
-    font-size: clamp(2.5rem, 8vw, 4rem); 
-    font-weight: bold; 
-    text-align: center; 
-    padding: 20px; 
-    box-sizing: border-box; 
-    text-shadow: 2px 2px 10px rgba(0,0,0,1); 
-    backdrop-filter: blur(10px); 
-    line-height: 1.4;
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(0, 0, 0, 0.95); color: #ffd700; z-index: 9999; flex-direction: column; 
+    justify-content: center; align-items: center; font-size: clamp(2.5rem, 8vw, 4rem); 
+    font-weight: bold; text-align: center; padding: 20px; box-sizing: border-box; 
+    text-shadow: 2px 2px 10px rgba(0,0,0,1); backdrop-filter: blur(10px); line-height: 1.4;
 }
+#hideOverlay span { font-size: 0.5em; color: white; display: block; margin-top: 15px; }
 
-/* 為了下方那行白色小字寫的專屬樣式 */
-#hideOverlay span {
-    font-size: 0.5em; 
-    color: white; 
-    display: block; 
-    margin-top: 15px;
-}
+/* 電腦與平板的適應性調整 */
+@media (min-width: 768px) { body { padding: 20px; } h1 { font-size: 3em; } .grid-container { grid-template-columns: repeat(3, 1fr); gap: 15px; } }
+@media (min-width: 1024px) { .grid-container { grid-template-columns: repeat(5, 1fr); } }
