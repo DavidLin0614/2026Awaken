@@ -88,9 +88,22 @@
             .btn { min-width: 45%; } /* 手機上按鈕變成兩兩一排 */
         }
         
-        /* 覆蓋 style.css 的設定，讓總控台的內容從上往下排，並固定高度 */
-        .station-card { justify-content: flex-start !important; min-height: 420px; }
-        details { margin-top: auto; } /* 讓下拉選單永遠被推到卡片最底部，看起來會超整齊 */
+        /* 讓卡片高度統一，內部內容靠上對齊，超過長度時內部自己捲動，絕對不撐破卡片！ */
+        .station-card { 
+            justify-content: flex-start !important; 
+            height: 400px; /* 固定高度 */
+            overflow-y: auto; /* 內容太多時，只在卡片內部產生卷軸 */
+            display: block; /* 取消 flex，讓排版更穩定 */
+        }
+        
+        /* 讓查看其他隊伍的按鈕，乖乖接在第三名下面 */
+        details { 
+            margin-top: 15px; /* 取消 auto，改成固定距離 */
+            background: rgba(0,0,0,0.4); 
+            padding: 10px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+        }
     </style>
 </head>
 <body>
