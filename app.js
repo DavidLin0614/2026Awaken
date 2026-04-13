@@ -1,5 +1,4 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-// 多載入 doc 模組來接聽設定
 import { getFirestore, collection, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -14,65 +13,85 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+let globalRecords =[];
+let sysSettings = { numStations: 15, stationConfigs: {}, hideMain: false };
+
 function formatTime(totalSeconds) {
     const m = Math.floor(totalSeconds / 60);
     const s = totalSeconds % 60;
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
+function getVal(r) { return r.recordValue !== undefined ? r.recordValue : r.time_seconds; }
+
 // ==========================================
-// 📺 接收總控台的「隱藏大螢幕」訊號
+// 📺 隱藏大螢幕的遮罩
 // ==========================================
 const hideOverlay = document.createElement('div');
-hideOverlay.id = "hideOverlay"; // 🌟 把它的 ID 綁定到我們剛剛在 CSS 寫好的設計
+hideOverlay.id = "hideOverlay";
 hideOverlay.innerHTML = "🏆<br>營會成績結算中<br><span>敬請期待最高榮耀</span>";
 document.body.appendChild(hideOverlay);
 
-onSnapshot(doc(db, "settings", "global"), (docSnap) => {
-    if (docSnap.exists() && docSnap.data().hideMain) {
-        hideOverlay.style.display = "flex"; // 顯示遮罩
-    } else {
-        hideOverlay.style.display = "none"; // 隱藏遮罩
-    }
-});
-
 // ==========================================
-// 🌟 排行榜顯示 (加入「同隊取最佳成績」邏輯)
+// 🌟 核心繪製功能 (當資料或設定改變時都會呼叫)
 // ==========================================
-onSnapshot(collection(db, "record"), (snapshot) => {
-    const allRecords =[];
-    snapshot.forEach((doc) => allRecords.push(doc.data()));
-
+function renderBoard() {
     const board = document.getElementById("board");
     board.innerHTML = ""; 
 
-    for (let i = 1; i <= 15; i++) {
-        let stationRecords = allRecords.filter(record => record.station === i);
+    for (let i = 1; i <= sysSettings.numStations; i++) {
+        let stationRecords = globalRecords.filter(r => r.station === i);
+        let conf = sysSettings.stationConfigs[i] || { type: 'time', unit: '' };
+        let isTime = conf.type === 'time';
         
-        // 🔥 神級演算法：同隊只留最佳成績
         let teamBest = {};
         stationRecords.forEach(r => {
-            // 如果這隊還沒紀錄過，或是這次的秒數比之前紀錄的還要少（更快）
-            if (!teamBest[r.team] || r.time_seconds < teamBest[r.team].time_seconds) {
-                teamBest[r.team] = r; 
+            let val = getVal(r);
+            if (!teamBest[r.team]) teamBest[r.team] = r;
+            else {
+                let currBest = getVal(teamBest[r.team]);
+                // 計時越小越好，計分越大越好
+                if (isTime ? val < currBest : val > currBest) teamBest[r.team] = r;
             }
         });
         
-        // 把過濾好的成績拿出來，重新由快到慢排序
         let uniqueRecords = Object.values(teamBest);
-        uniqueRecords.sort((a, b) => a.time_seconds - b.time_seconds);
+        uniqueRecords.sort((a, b) => isTime ? (getVal(a) - getVal(b)) : (getVal(b) - getVal(a)));
 
-        let top1 = uniqueRecords[0] ? `${uniqueRecords[0].team} (${formatTime(uniqueRecords[0].time_seconds)})` : "尚未產生";
-        let top2 = uniqueRecords[1] ? `${uniqueRecords[1].team} (${formatTime(uniqueRecords[1].time_seconds)})` : "尚未產生";
-        let top3 = uniqueRecords[2] ? `${uniqueRecords[2].team} (${formatTime(uniqueRecords[2].time_seconds)})` : "尚未產生";
+        let topHtml =[];
+        for(let j = 0; j < 3; j++) {
+            if(uniqueRecords[j]) {
+                let val = getVal(uniqueRecords[j]);
+                let display = isTime ? formatTime(val) : `${val} ${conf.unit}`;
+                topHtml.push(`${uniqueRecords[j].team} (${display})`);
+            } else {
+                topHtml.push("尚未產生");
+            }
+        }
 
         board.innerHTML += `
             <div class="station-card">
                 <div class="station-title">第 ${i} 關</div>
-                <p>🥇 ${top1}</p>
-                <p>🥈 ${top2}</p>
-                <p>🥉 ${top3}</p>
+                <p>🥇 ${topHtml[0]}</p>
+                <p>🥈 ${topHtml[1]}</p>
+                <p>🥉 ${topHtml[2]}</p>
             </div>
         `;
     }
+}
+
+// 監聽全局設定
+onSnapshot(doc(db, "settings", "global"), (docSnap) => {
+    if (docSnap.exists()) {
+        sysSettings = { ...sysSettings, ...docSnap.data() };
+        hideOverlay.style.display = sysSettings.hideMain ? "flex" : "none";
+        renderBoard(); // 設定一變，立刻重畫
+    }
+});
+
+// 監聽成績資料
+onSnapshot(collection(db, "record"), (snapshot) => {
+    globalRecords =[];
+    snapshot.forEach((doc) => globalRecords.push(doc.data()));
+    renderBoard(); // 資料一變，立刻重畫
 });
