@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getFirestore, collection, onSnapshot, deleteDoc, doc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+// 🌟 匯入清單加入了 addDoc 來負責新增資料
+import { getFirestore, collection, onSnapshot, deleteDoc, doc, setDoc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBo5iMRonG0rFu6ZuIBJFXzwnWF9xiAKgQ",
@@ -28,6 +29,9 @@ function formatTime(totalSeconds) {
 
 function getVal(r) { return r.recordValue !== undefined ? r.recordValue : r.time_seconds; }
 
+// ==========================================
+// 1. 監聽全局設定檔
+// ==========================================
 onSnapshot(doc(db, "settings", "global"), (docSnap) => {
     if (docSnap.exists()) sysSettings = { ...sysSettings, ...docSnap.data() };
     
@@ -40,6 +44,9 @@ onSnapshot(doc(db, "settings", "global"), (docSnap) => {
     hideBtn.style.background = sysSettings.hideMain ? "#27ae60" : "#8e44ad";
 });
 
+// ==========================================
+// 2. 監聽成績並動態繪製卡片
+// ==========================================
 onSnapshot(collection(db, "record"), (snapshot) => {
     globalRecords =[];
     snapshot.forEach((d) => globalRecords.push({ id: d.id, ...d.data() }));
@@ -56,7 +63,7 @@ onSnapshot(collection(db, "record"), (snapshot) => {
         let teamBest = {};
         stationRecords.forEach(r => {
             let val = getVal(r);
-            if (val > maxVal || val < 0) return; // 🌟 防呆無視超標舊資料
+            if (val > maxVal || val < 0) return; // 防呆
 
             if (!teamBest[r.team]) {
                 teamBest[r.team] = r;
@@ -124,6 +131,9 @@ onSnapshot(collection(db, "record"), (snapshot) => {
     });
 });
 
+// ==========================================
+// 3. 系統參數面板邏輯
+// ==========================================
 document.getElementById('openSettingsBtn').addEventListener('click', () => {
     document.getElementById('set_pwd').value = sysSettings.password;
     document.getElementById('set_teams').value = sysSettings.numTeams;
@@ -187,6 +197,9 @@ document.getElementById('saveSettingsBtn').addEventListener('click', async () =>
     document.getElementById('settingsModal').style.display = 'none';
 });
 
+// ==========================================
+// 4. 動態結算總成績 (Excel匯出)
+// ==========================================
 document.getElementById('calcScoreBtn').addEventListener('click', () => {
     let teamScores = {}; 
     for (let i = 1; i <= sysSettings.numTeams; i++) teamScores[`第${i}隊`] = 0;
@@ -200,7 +213,7 @@ document.getElementById('calcScoreBtn').addEventListener('click', () => {
         let teamBest = {};
         stationRecords.forEach(r => {
             let val = getVal(r);
-            if (val > maxVal || val < 0) return; // 🌟 結算時也要防呆
+            if (val > maxVal || val < 0) return; 
 
             if (!teamBest[r.team]) teamBest[r.team] = r;
             else {
@@ -237,6 +250,95 @@ document.getElementById('calcScoreBtn').addEventListener('click', () => {
     link.click();
 });
 
+// ==========================================
+// 5. ➕ 總控台手動新增成績
+// ==========================================
+document.getElementById('openAddRecordBtn').addEventListener('click', () => {
+    // 自動產生關卡選單
+    const stSelect = document.getElementById('add_station');
+    stSelect.innerHTML = "";
+    for(let i = 1; i <= sysSettings.numStations; i++) {
+        let conf = sysSettings.stationConfigs[i] || {type:'time'};
+        let typeStr = conf.type === 'time' ? '⏱️計時' : '🎯計分';
+        stSelect.innerHTML += `<option value="${i}">第 ${i} 關 (${typeStr})</option>`;
+    }
+
+    // 自動產生隊伍選單
+    const tmSelect = document.getElementById('add_team');
+    tmSelect.innerHTML = "";
+    for(let i = 1; i <= sysSettings.numTeams; i++) {
+        tmSelect.innerHTML += `<option value="第${i}隊">第 ${i} 隊</option>`;
+    }
+
+    document.getElementById('add_min').value = "";
+    document.getElementById('add_sec').value = "";
+    document.getElementById('add_score').value = "";
+    
+    stSelect.dispatchEvent(new Event('change')); // 觸發切換輸入框
+    document.getElementById('addRecordModal').style.display = 'flex';
+});
+
+document.getElementById('closeAddRecordBtn').addEventListener('click', () => {
+    document.getElementById('addRecordModal').style.display = 'none';
+});
+
+// 切換關卡時，自動變更輸入框類型
+document.getElementById('add_station').addEventListener('change', (e) => {
+    const st = parseInt(e.target.value);
+    const conf = sysSettings.stationConfigs[st] || {type:'time', unit:''};
+    if (conf.type === 'time') {
+        document.getElementById('add_timeGroup').style.display = "block";
+        document.getElementById('add_scoreGroup').style.display = "none";
+    } else {
+        document.getElementById('add_timeGroup').style.display = "none";
+        document.getElementById('add_scoreGroup').style.display = "block";
+        document.getElementById('add_scoreLabel').innerText = `🎯 獲得數值 (單位: ${conf.unit})`;
+    }
+});
+
+// 送出手動新增的資料
+document.getElementById('saveNewRecordBtn').addEventListener('click', async () => {
+    const st = parseInt(document.getElementById('add_station').value);
+    const team = document.getElementById('add_team').value;
+    const conf = sysSettings.stationConfigs[st] || {type:'time'};
+    let isTime = conf.type === 'time';
+    let finalValue = 0;
+
+    if (isTime) {
+        const min = parseInt(document.getElementById('add_min').value) || 0;
+        const sec = parseInt(document.getElementById('add_sec').value) || 0;
+        if (min === 0 && sec === 0) return alert("請輸入花費時間！");
+        if (sec > 59) return alert("❌ 秒數不能超過 59！");
+        if (min > sysSettings.maxMin) return alert(`❌ 分鐘數不能超過 ${sysSettings.maxMin}！`);
+        finalValue = min * 60 + sec;
+    } else {
+        const score = parseInt(document.getElementById('add_score').value);
+        if (isNaN(score)) return alert("請輸入數值！");
+        if (score > sysSettings.maxScore) return alert(`❌ 數值不能超過 ${sysSettings.maxScore}！`);
+        finalValue = score;
+    }
+
+    const now = new Date();
+    const nowTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
+    try {
+        document.getElementById('saveNewRecordBtn').innerText = "🚀 傳送中...";
+        await addDoc(collection(db, "record"), {
+            station: st,
+            team: team,
+            recordValue: finalValue,
+            time_seconds: finalValue,
+            timestamp: nowTime + " (補登)" // 🌟 特別標註這是手動新增的，方便管理
+        });
+        document.getElementById('saveNewRecordBtn').innerText = "🚀 確認新增";
+        document.getElementById('addRecordModal').style.display = 'none';
+    } catch (err) {
+        alert("發生錯誤，請檢查網路連線！");
+        document.getElementById('saveNewRecordBtn').innerText = "🚀 確認新增";
+    }
+});
+
+// 開關控制與匯出
 document.getElementById('lockSystemBtn').addEventListener('click', async () => {
     await setDoc(doc(db, "settings", "global"), { isLocked: !sysSettings.isLocked }, { merge: true });
 });

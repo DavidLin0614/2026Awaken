@@ -6,7 +6,6 @@
     <title>營會總控台</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* 🌟 強制讓總控台覆蓋原設定，變得超級寬敞 */
         .grid-container { max-width: 1600px !important; }
         
         .control-panel { 
@@ -14,7 +13,7 @@
             width: 100%; max-width: 1600px; display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap; 
         }
         .btn { 
-            flex: 1 1 15%; padding: 12px 5px; font-size: 1em; border-radius: 5px; cursor: pointer; 
+            flex: 1 1 12%; padding: 12px 5px; font-size: 1em; border-radius: 5px; cursor: pointer; 
             border: none; font-weight: bold; transition: 0.2s; white-space: pre-line; line-height: 1.4; 
         }
         .btn:hover { filter: brightness(1.2); }
@@ -23,6 +22,7 @@
         .btn-toggle { background: #e74c3c; color: white; }
         .btn-toggle-screen { background: #8e44ad; color: white; }
         .btn-setting { background: #3498db; color: white; }
+        .btn-add { background: #1abc9c; color: white; } /* 🌟 新增按鈕的專屬顏色 */
         .btn-danger { background: #c0392b; color: white; }
         
         .record-list { list-style: none; padding: 0; margin: 0; font-size: 0.9em; text-align: left; }
@@ -35,15 +35,20 @@
         .del-btn { background: #ff4d4d; }
 
         @media (max-width: 768px) { .btn { flex: 1 1 45%; font-size: 0.9em; } #dashboardBoard { grid-template-columns: 1fr !important; } }
+        
+        /* Modal 裡的排版微調 */
+        .time-inputs { display: flex; gap: 10px; }
     </style>
 </head>
 <body>
-    <h1 style="margin-bottom: 10px;">👑 總控台👑</h1>
+    <!-- 🌟 更新為你要的標題 -->
+    <h1 style="margin-bottom: 10px;">👑 總控台 👑</h1>
     
     <div class="control-panel">
         <button class="btn btn-score" id="calcScoreBtn">🏆 結算總成績</button>
         <button class="btn btn-export" id="exportBtn">📊 匯出資料 (CSV)</button>
         <button class="btn btn-setting" id="openSettingsBtn">⚙️ 系統參數設定</button>
+        <button class="btn btn-add" id="openAddRecordBtn">➕ 新增資料</button>
         <button class="btn btn-toggle" id="lockSystemBtn">🔒 關閉輸入<br>(讀取中)</button>
         <button class="btn btn-toggle-screen" id="hideScreenBtn">🙈 隱藏大螢幕<br>(讀取中)</button>
         <button class="btn btn-danger" id="clearAllBtn">💣 一鍵清空</button>
@@ -51,7 +56,7 @@
 
     <div class="grid-container" id="dashboardBoard"></div>
 
-    <!-- 設定面板 -->
+    <!-- ⚙️ 系統參數設定 Modal -->
     <div class="modal-overlay" id="settingsModal">
         <div class="modal-content">
             <h2>⚙️ 系統參數設定面板</h2>
@@ -80,6 +85,43 @@
             <div class="modal-btns">
                 <button class="btn btn-export" style="flex:1;" id="saveSettingsBtn">💾 儲存並套用</button>
                 <button class="btn btn-danger" style="flex:1;" id="closeSettingsBtn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ➕ 手動新增資料 Modal -->
+    <div class="modal-overlay" id="addRecordModal">
+        <div class="modal-content">
+            <h2>➕ 手動新增成績</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>🚩 選擇關卡</label>
+                    <select id="add_station"></select>
+                </div>
+                <div class="form-group">
+                    <label>👥 選擇隊伍</label>
+                    <select id="add_team"></select>
+                </div>
+            </div>
+            
+            <!-- ⏱️ 計時模式 -->
+            <div class="form-group" id="add_timeGroup">
+                <label>⏱️ 花費時間</label>
+                <div class="time-inputs">
+                    <input type="number" id="add_min" placeholder="分" min="0">
+                    <input type="number" id="add_sec" placeholder="秒" min="0" max="59">
+                </div>
+            </div>
+
+            <!-- 🎯 計分模式 -->
+            <div class="form-group" id="add_scoreGroup" style="display: none;">
+                <label id="add_scoreLabel">🎯 獲得數值</label>
+                <input type="number" id="add_score" placeholder="請輸入數值" min="0">
+            </div>
+
+            <div class="modal-btns">
+                <button class="btn btn-add" style="flex:1;" id="saveNewRecordBtn">🚀 確認新增</button>
+                <button class="btn btn-danger" style="flex:1;" id="closeAddRecordBtn">取消</button>
             </div>
         </div>
     </div>
