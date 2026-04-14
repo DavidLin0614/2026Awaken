@@ -5,9 +5,9 @@
 
 body {
     margin: 0;
-    padding: 10px; 
+    padding: 10px;
     font-family: "微軟正黑體", sans-serif;
-    background-image: url('bg.jpg'); 
+    background-image: url('bg.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -18,15 +18,15 @@ body {
 h1 { text-align: center; font-size: 2.2em; margin-top: 10px; }
 
 /* ========================================== */
-/* 格子排版系統 (大螢幕恢復 1200px) */
+/* 格子排版系統 (預設手機版) */
 /* ========================================== */
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 手機版 1排2關 */
+    grid-template-columns: repeat(2, 1fr); /* 手機版預設 1排2關 */
     gap: 10px;
     width: 100%;
-    max-width: 1200px; /* 🌟 恢復大螢幕的黃金比例 */
-    margin: 0 auto; 
+    max-width: 1600px;
+    margin: 0 auto;
 }
 
 ::-webkit-scrollbar { width: 6px; }
@@ -34,51 +34,54 @@ h1 { text-align: center; font-size: 2.2em; margin-top: 10px; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 215, 0, 0.5); border-radius: 10px; }
 
 /* ========================================== */
-/* 卡片外觀設定 */
+/* 卡片外觀設定 (預設手機版) */
 /* ========================================== */
 .station-card {
-    background-color: rgba(0, 0, 0, 0.7); 
+    background-color: rgba(0, 0, 0, 0.7);
     padding: 10px;
-    border-radius: 10px; 
-    border: 2px solid #ffd700; 
+    border-radius: 10px;
+    border: 2px solid #ffd700;
     text-align: center;
     display: flex;
     flex-direction: column;
-    justify-content: center; 
-    min-height: 160px; 
+    justify-content: center;
+    min-height: 150px; /* 手機版卡片高度稍微扁一點 */
     width: 100%;
     position: relative;
-    min-width: 0; /* 🌟 神器：確保內容過長時卡片能自動縮小，絕對不撐破手機螢幕 */
+    min-width: 0; /* 確保內容不會撐破螢幕 */
 }
 
 .station-title { font-size: 1.3em; font-weight: bold; color: #ffd700; margin-bottom: 8px; }
 
 .station-card p, .record-list li {
-    white-space: nowrap; 
-    overflow: hidden;    
-    text-overflow: ellipsis; 
-    margin: 6px 0; 
-    font-size: 0.9em; /* 🌟 手機版字體縮小，完美塞入 2 關 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 6px 0;
+    font-size: 0.9em; /* 手機版字體縮小 */
 }
 
+/* 🌟 總控台專用卡片 (不受大螢幕縮放影響，永遠固定高度) */
 .dashboard-card {
-    justify-content: flex-start !important; 
-    height: 420px; 
-    overflow-y: auto; 
-    display: block; 
+    justify-content: flex-start !important;
+    height: 420px !important;
+    overflow-y: auto;
+    display: block;
 }
 
-details { 
-    margin-top: 15px; 
-    background: rgba(0,0,0,0.4); 
-    padding: 10px; 
-    border-radius: 5px; 
-    cursor: pointer; 
+details {
+    margin-top: 15px;
+    background: rgba(0,0,0,0.4);
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
     text-align: left;
 }
 summary { text-align: center; font-weight: bold; color: #ffd700; outline: none; }
 
-/* Modal 樣式 */
+/* ========================================== */
+/* 彈出視窗與遮罩 */
+/* ========================================== */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
 .modal-content { background: #2c3e50; color: white; padding: 25px; border-radius: 10px; width: 95%; max-width: 600px; max-height: 90vh; overflow-y: auto; text-shadow: none; border: 2px solid #ffd700; }
 .modal-content h2 { margin-top: 0; color: #ffd700; border-bottom: 1px solid #7f8c8d; padding-bottom: 10px; }
@@ -89,21 +92,36 @@ summary { text-align: center; font-weight: bold; color: #ffd700; outline: none; 
 .form-row .form-group { flex: 1; }
 .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
 
-/* 隱藏大螢幕的專屬遮罩 */
 #hideOverlay {
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); color: #ffd700; z-index: 9999; flex-direction: column; justify-content: center; align-items: center; font-size: clamp(2.5rem, 8vw, 4rem); font-weight: bold; text-align: center; padding: 20px; box-sizing: border-box; text-shadow: 2px 2px 10px rgba(0,0,0,1); backdrop-filter: blur(10px); line-height: 1.4;
 }
 #hideOverlay span { font-size: 0.5em; color: white; display: block; margin-top: 15px; }
 
-/* 🌟 電腦與平板的適應性調整 */
-@media (min-width: 768px) { 
-    body { padding: 20px; } 
-    h1 { font-size: 3em; } 
-    .grid-container { grid-template-columns: repeat(3, 1fr); gap: 15px; } 
+/* ========================================== */
+/* 🌟 電腦與平板的適應性調整 (RWD 魔法區) */
+/* ========================================== */
+
+/* 平板電腦 (768px 以上) -> 1排3關 */
+@media (min-width: 768px) {
+    body { padding: 20px; }
+    h1 { font-size: 3em; }
+    .grid-container { grid-template-columns: repeat(3, 1fr); gap: 15px; }
     .station-card { padding: 15px; min-height: 180px; }
-    .station-title { font-size: 1.5em; }
-    .station-card p, .record-list li { font-size: 1.1em; } /* 平板以上字體放大 */
+    .station-title { font-size: 1.5em; margin-bottom: 12px; }
+    .station-card p, .record-list li { font-size: 1.1em; margin: 8px 0; }
 }
-@media (min-width: 1024px) { 
-    .grid-container { grid-template-columns: repeat(5, 1fr); } 
+
+/* 🌟 27吋以上大螢幕究極優化 (1200px 以上) -> 1排5關 */
+@media (min-width: 1200px) {
+    .grid-container { 
+        grid-template-columns: repeat(5, 1fr); 
+        gap: 20px; 
+        max-width: 90%; /* 🌟 魔法在這裡：不寫死寬度，讓它佔據螢幕的 90%！ */
+    }
+    .station-card { 
+        min-height: 240px; /* 大螢幕的卡片拉高，避免太扁空虛 */
+        padding: 20px;
+    }
+    .station-title { font-size: 1.8em; margin-bottom: 18px; }
+    .station-card p { font-size: 1.25em; margin: 12px 0; } /* 大螢幕字體等比放大 */
 }
