@@ -14,7 +14,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let globalRecords =[];
-let sysSettings = { numStations: 15, stationConfigs: {}, hideMain: false };
+let sysSettings = { numStations: 15, stationConfigs: {}, hideMain: false, maxMin: 59, maxScore: 999 };
 
 function formatTime(totalSeconds) {
     const m = Math.floor(totalSeconds / 60);
@@ -24,17 +24,11 @@ function formatTime(totalSeconds) {
 
 function getVal(r) { return r.recordValue !== undefined ? r.recordValue : r.time_seconds; }
 
-// ==========================================
-// 📺 隱藏大螢幕的遮罩
-// ==========================================
 const hideOverlay = document.createElement('div');
 hideOverlay.id = "hideOverlay";
 hideOverlay.innerHTML = "🏆<br>營會成績結算中<br><span>敬請期待最高榮耀</span>";
 document.body.appendChild(hideOverlay);
 
-// ==========================================
-// 🌟 核心繪製功能 (當資料或設定改變時都會呼叫)
-// ==========================================
 function renderBoard() {
     const board = document.getElementById("board");
     board.innerHTML = ""; 
@@ -44,13 +38,18 @@ function renderBoard() {
         let conf = sysSettings.stationConfigs[i] || { type: 'time', unit: '' };
         let isTime = conf.type === 'time';
         
+        // 🌟 核心防呆極限值設定
+        let maxVal = isTime ? ((sysSettings.maxMin * 60) + 59) : sysSettings.maxScore;
+
         let teamBest = {};
         stationRecords.forEach(r => {
             let val = getVal(r);
+            // 🌟 防呆：如果數值大於極限值，或是小於0的錯誤資料，直接無視它！
+            if (val > maxVal || val < 0) return;
+
             if (!teamBest[r.team]) teamBest[r.team] = r;
             else {
                 let currBest = getVal(teamBest[r.team]);
-                // 計時越小越好，計分越大越好
                 if (isTime ? val < currBest : val > currBest) teamBest[r.team] = r;
             }
         });
@@ -80,18 +79,16 @@ function renderBoard() {
     }
 }
 
-// 監聽全局設定
 onSnapshot(doc(db, "settings", "global"), (docSnap) => {
     if (docSnap.exists()) {
         sysSettings = { ...sysSettings, ...docSnap.data() };
         hideOverlay.style.display = sysSettings.hideMain ? "flex" : "none";
-        renderBoard(); // 設定一變，立刻重畫
+        renderBoard(); 
     }
 });
 
-// 監聽成績資料
 onSnapshot(collection(db, "record"), (snapshot) => {
     globalRecords =[];
     snapshot.forEach((doc) => globalRecords.push(doc.data()));
-    renderBoard(); // 資料一變，立刻重畫
+    renderBoard(); 
 });

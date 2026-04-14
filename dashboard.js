@@ -14,7 +14,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let globalRecords =[];
-// 系統預設參數 (萬一資料庫沒有資料時的保護)
 let sysSettings = {
     password: "123", numTeams: 15, numStations: 15, maxMin: 59, maxScore: 999,
     scoreRule: { top1: 300, top2: 200, top3: 100, base: 50 }, stationConfigs: {},
@@ -27,18 +26,11 @@ function formatTime(totalSeconds) {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
-// 取得分數通用函式 (相容新舊資料)
 function getVal(r) { return r.recordValue !== undefined ? r.recordValue : r.time_seconds; }
 
-// ==========================================
-// 1. 監聽全局設定檔
-// ==========================================
 onSnapshot(doc(db, "settings", "global"), (docSnap) => {
-    if (docSnap.exists()) {
-        sysSettings = { ...sysSettings, ...docSnap.data() };
-    }
+    if (docSnap.exists()) sysSettings = { ...sysSettings, ...docSnap.data() };
     
-    // 更新控制按鈕畫面
     const lockBtn = document.getElementById('lockSystemBtn');
     lockBtn.innerText = sysSettings.isLocked ? "🔓 開放輸入\n(目前：鎖定中)" : "🔒 關閉輸入\n(目前：開放中)";
     lockBtn.style.background = sysSettings.isLocked ? "#27ae60" : "#e74c3c";
@@ -48,9 +40,6 @@ onSnapshot(doc(db, "settings", "global"), (docSnap) => {
     hideBtn.style.background = sysSettings.hideMain ? "#27ae60" : "#8e44ad";
 });
 
-// ==========================================
-// 2. 監聽成績並動態繪製關卡卡片
-// ==========================================
 onSnapshot(collection(db, "record"), (snapshot) => {
     globalRecords =[];
     snapshot.forEach((d) => globalRecords.push({ id: d.id, ...d.data() }));
@@ -62,18 +51,18 @@ onSnapshot(collection(db, "record"), (snapshot) => {
         let stationRecords = globalRecords.filter(r => r.station === i);
         let conf = sysSettings.stationConfigs[i] || { type: 'time', unit: '' };
         let isTime = conf.type === 'time';
+        let maxVal = isTime ? ((sysSettings.maxMin * 60) + 59) : sysSettings.maxScore;
         
         let teamBest = {};
         stationRecords.forEach(r => {
             let val = getVal(r);
+            if (val > maxVal || val < 0) return; // 🌟 防呆無視超標舊資料
+
             if (!teamBest[r.team]) {
                 teamBest[r.team] = r;
             } else {
                 let currBest = getVal(teamBest[r.team]);
-                // 時間越小越好，分數越大越好
-                if (isTime ? val < currBest : val > currBest) {
-                    teamBest[r.team] = r;
-                }
+                if (isTime ? val < currBest : val > currBest) teamBest[r.team] = r;
             }
         });
 
@@ -109,7 +98,6 @@ onSnapshot(collection(db, "record"), (snapshot) => {
         if(top3HTML === '') top3HTML = '<li style="color:#aaa;">目前尚無紀錄</li>';
         let detailsHTML = othersHTML ? `<details><summary>查看其他 ${uniqueRecords.length - 3} 隊成績 ▼</summary><ul class="record-list">${othersHTML}</ul></details>` : '';
 
-        // 🌟 加上 dashboard-card 類別來固定高度
         board.innerHTML += `
             <div class="station-card dashboard-card">
                 <div class="station-title">第 ${i} 關 <small style="color:#aaa;font-size:0.7em;">(${isTime?'計時':'計分'})</small></div>
@@ -118,7 +106,6 @@ onSnapshot(collection(db, "record"), (snapshot) => {
             </div>`;
     }
 
-    // 綁定編輯與刪除
     document.querySelectorAll('.del-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             if(confirm("確定刪除？")) await deleteDoc(doc(db, "record", e.target.dataset.id));
@@ -127,7 +114,7 @@ onSnapshot(collection(db, "record"), (snapshot) => {
 
     document.querySelectorAll('.edit-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
-            const newTotal = prompt(`請輸入 ${e.target.dataset.team} 的「全新數值」\n(計時關卡: 1分30秒請直接輸入 90)\n(計分關卡: 直接輸入分數)`);
+            const newTotal = prompt(`請輸入 ${e.target.dataset.team} 的「全新數值」`);
             if(newTotal && !isNaN(newTotal)) {
                 await updateDoc(doc(db, "record", e.target.dataset.id), {
                     recordValue: parseInt(newTotal), time_seconds: parseInt(newTotal)
@@ -137,9 +124,6 @@ onSnapshot(collection(db, "record"), (snapshot) => {
     });
 });
 
-// ==========================================
-// 3. 系統參數面板邏輯 (開關與儲存)
-// ==========================================
 document.getElementById('openSettingsBtn').addEventListener('click', () => {
     document.getElementById('set_pwd').value = sysSettings.password;
     document.getElementById('set_teams').value = sysSettings.numTeams;
@@ -201,12 +185,8 @@ document.getElementById('saveSettingsBtn').addEventListener('click', async () =>
     await setDoc(doc(db, "settings", "global"), newSettings, { merge: true });
     document.getElementById('saveSettingsBtn').innerText = "💾 儲存並套用";
     document.getElementById('settingsModal').style.display = 'none';
-    alert("✅ 系統參數已更新！大螢幕與關主介面將自動套用新規則。");
 });
 
-// ==========================================
-// 4. 動態結算營會總成績 (Excel匯出)
-// ==========================================
 document.getElementById('calcScoreBtn').addEventListener('click', () => {
     let teamScores = {}; 
     for (let i = 1; i <= sysSettings.numTeams; i++) teamScores[`第${i}隊`] = 0;
@@ -215,10 +195,13 @@ document.getElementById('calcScoreBtn').addEventListener('click', () => {
         let stationRecords = globalRecords.filter(r => r.station === i);
         let conf = sysSettings.stationConfigs[i] || { type: 'time' };
         let isTime = conf.type === 'time';
+        let maxVal = isTime ? ((sysSettings.maxMin * 60) + 59) : sysSettings.maxScore;
 
         let teamBest = {};
         stationRecords.forEach(r => {
             let val = getVal(r);
+            if (val > maxVal || val < 0) return; // 🌟 結算時也要防呆
+
             if (!teamBest[r.team]) teamBest[r.team] = r;
             else {
                 let currBest = getVal(teamBest[r.team]);
@@ -254,7 +237,6 @@ document.getElementById('calcScoreBtn').addEventListener('click', () => {
     link.click();
 });
 
-// 開關控制與一鍵清空
 document.getElementById('lockSystemBtn').addEventListener('click', async () => {
     await setDoc(doc(db, "settings", "global"), { isLocked: !sysSettings.isLocked }, { merge: true });
 });

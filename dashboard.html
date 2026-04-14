@@ -6,6 +6,9 @@
     <title>營會終極總控台 2.0</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        /* 🌟 強制讓總控台覆蓋原設定，變得超級寬敞 */
+        .grid-container { max-width: 1600px !important; }
+        
         .control-panel { 
             background: rgba(0,0,0,0.8); padding: 15px; border-radius: 10px; margin: 0 auto 20px auto; 
             width: 100%; max-width: 1600px; display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap; 
@@ -31,7 +34,7 @@
         .edit-btn { background: #3498db; margin-right: 5px; }
         .del-btn { background: #ff4d4d; }
 
-        @media (max-width: 768px) { .btn { flex: 1 1 45%; font-size: 0.9em; } #dashboardBoard { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .btn { flex: 1 1 45%; font-size: 0.9em; } #dashboardBoard { grid-template-columns: 1fr !important; } }
     </style>
 </head>
 <body>
@@ -46,14 +49,12 @@
         <button class="btn btn-danger" id="clearAllBtn">💣 一鍵清空</button>
     </div>
 
-    <!-- 排行榜卡片區 -->
     <div class="grid-container" id="dashboardBoard"></div>
 
-    <!-- ⚙️ 系統參數設定 Modal -->
+    <!-- 設定面板 -->
     <div class="modal-overlay" id="settingsModal">
         <div class="modal-content">
             <h2>⚙️ 系統參數設定面板</h2>
-            
             <div class="form-row">
                 <div class="form-group"><label>🔒 關主登入密碼</label><input type="text" id="set_pwd" placeholder="例如: 2026"></div>
             </div>
@@ -75,9 +76,7 @@
             </div>
             <hr style="border:1px solid #7f8c8d; margin:15px 0;">
             <h3 style="margin-top:0; color:#ffd700;">🎛️ 各關卡屬性設定 (計時/計分)</h3>
-            <div id="stationConfigsContainer">
-                <!-- 由 JS 自動產生 -->
-            </div>
+            <div id="stationConfigsContainer"></div>
             <div class="modal-btns">
                 <button class="btn btn-export" style="flex:1;" id="saveSettingsBtn">💾 儲存並套用</button>
                 <button class="btn btn-danger" style="flex:1;" id="closeSettingsBtn">取消</button>

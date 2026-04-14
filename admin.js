@@ -26,9 +26,6 @@ function formatTime(totalSeconds) {
 }
 function getVal(r) { return r.recordValue !== undefined ? r.recordValue : r.time_seconds; }
 
-// ==========================================
-// 🔒 密碼與系統狀態驗證
-// ==========================================
 document.getElementById('loginBtn').addEventListener('click', () => {
     if (!sysSettings) return alert("系統載入中，請稍後");
     if (document.getElementById('adminPwd').value === sysSettings.password) {
@@ -44,17 +41,12 @@ lockOverlay.style = "display:none; position:fixed; top:0; left:0; width:100%; he
 lockOverlay.innerHTML = "🔒<br>關卡已關閉輸入<br><span style='font-size:0.5em; color:#ccc; margin-top:10px;'>目前正在進行總結算</span>";
 document.body.appendChild(lockOverlay);
 
-// ==========================================
-// ⚙️ 監聽全局設定 (動態生成隊伍、切換輸入框)
-// ==========================================
 onSnapshot(doc(db, "settings", "global"), (docSnap) => {
     if (docSnap.exists()) {
         sysSettings = docSnap.data();
         
-        // 1. 系統鎖定畫面
         lockOverlay.style.display = sysSettings.isLocked ? "flex" : "none";
 
-        // 2. 如果密碼被改了，強制踢回登入畫面
         if (document.getElementById('mainContainer').style.display === "block" && document.getElementById('adminPwd').value !== sysSettings.password) {
             alert("⚠️ 系統密碼已更改，請重新登入！");
             document.getElementById('pwdOverlay').style.display = "flex";
@@ -62,7 +54,6 @@ onSnapshot(doc(db, "settings", "global"), (docSnap) => {
             document.getElementById('adminPwd').value = "";
         }
 
-        // 3. 動態產生隊伍下拉選單
         const teamSelect = document.getElementById('teamSelect');
         const currentSelected = teamSelect.value;
         teamSelect.innerHTML = "";
@@ -71,14 +62,13 @@ onSnapshot(doc(db, "settings", "global"), (docSnap) => {
         }
         if (currentSelected) teamSelect.value = currentSelected;
 
-        // 4. 動態切換 計時/計分 介面
         currentConf = sysSettings.stationConfigs[currentStation] || { type: 'time', unit: '' };
         document.getElementById('stationDisplay').innerText = `第 ${currentStation} 關 (${currentConf.type==='time'?'⏱️計時':'🎯計分'})`;
         
         if (currentConf.type === 'time') {
             document.getElementById('timeInputGroup').style.display = "block";
             document.getElementById('scoreInputGroup').style.display = "none";
-            document.getElementById('secInput').setAttribute('max', '59'); // 秒數防呆
+            document.getElementById('secInput').setAttribute('max', '59'); 
         } else {
             document.getElementById('timeInputGroup').style.display = "none";
             document.getElementById('scoreInputGroup').style.display = "block";
@@ -87,9 +77,6 @@ onSnapshot(doc(db, "settings", "global"), (docSnap) => {
     }
 });
 
-// ==========================================
-// 📊 本關所有紀錄 (關主檢視用)
-// ==========================================
 onSnapshot(collection(db, "record"), (snapshot) => {
     if (!currentConf) return;
     const allRecords =[];
@@ -97,10 +84,13 @@ onSnapshot(collection(db, "record"), (snapshot) => {
 
     let stationRecords = allRecords.filter(r => r.station === currentStation);
     let isTime = currentConf.type === 'time';
+    let maxVal = isTime ? ((sysSettings.maxMin * 60) + 59) : sysSettings.maxScore;
     
     let teamBest = {};
     stationRecords.forEach(r => {
         let val = getVal(r);
+        if (val > maxVal || val < 0) return; // 🌟 防呆：超大數值將直接消失在關主介面中
+
         if (!teamBest[r.team]) teamBest[r.team] = r;
         else {
             if (isTime ? val < getVal(teamBest[r.team]) : val > getVal(teamBest[r.team])) teamBest[r.team] = r;
@@ -121,8 +111,10 @@ onSnapshot(collection(db, "record"), (snapshot) => {
     uniqueRecords.forEach((r, index) => {
         let val = getVal(r);
         let display = isTime ? formatTime(val) : `${val} ${currentConf.unit}`;
-        let rankColor = index < 3 ? "#ffd700" : "#333";
-        let rankText = index < 3 ? `第 ${index + 1} 名` : `第 ${index + 1} 名`;
+        
+        // 🌟 改成黑色，並在前面加上獎盃，超清楚
+        let rankColor = index < 3 ? "#000" : "#555";
+        let rankText = index < 3 ? `🏆 第 ${index + 1} 名` : `第 ${index + 1} 名`;
 
         const item = document.createElement('div');
         item.className = 'record-item';
@@ -140,9 +132,6 @@ onSnapshot(collection(db, "record"), (snapshot) => {
     });
 });
 
-// ==========================================
-// 🚀 送出成績 (加入防呆驗證)
-// ==========================================
 document.getElementById('submitBtn').addEventListener('click', async () => {
     const team = document.getElementById('teamSelect').value;
     let finalValue = 0;
@@ -154,13 +143,13 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
         
         if (min === 0 && sec === 0) return alert("請輸入花費時間！");
         if (sec > 59) return alert("❌ 秒數不能超過 59 秒！");
-        if (min > sysSettings.maxMin) return alert(`❌ 分鐘數不能超過總控台設定的 ${sysSettings.maxMin} 分鐘！`);
+        if (min > sysSettings.maxMin) return alert(`❌ 分鐘數不能超過設定的 ${sysSettings.maxMin} 分鐘！`);
         
         finalValue = (min * 60) + sec;
     } else {
         const score = parseInt(document.getElementById('scoreInput').value);
         if (isNaN(score)) return alert("請輸入數值！");
-        if (score > sysSettings.maxScore) return alert(`❌ 數值不能超過總控台設定的最大值 ${sysSettings.maxScore}！`);
+        if (score > sysSettings.maxScore) return alert(`❌ 數值不能超過設定的最大值 ${sysSettings.maxScore}！`);
         
         finalValue = score;
     }
@@ -173,8 +162,8 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
         await addDoc(collection(db, "record"), {
             station: currentStation,
             team: team,
-            recordValue: finalValue,   // 🌟 統一儲存新版數值
-            time_seconds: finalValue,  // 兼容舊版的欄位
+            recordValue: finalValue,   
+            time_seconds: finalValue,  
             timestamp: nowTime
         });
         
