@@ -26,16 +26,9 @@ function formatTime(totalSeconds) {
 }
 function getVal(r) { return r.recordValue !== undefined ? r.recordValue : r.time_seconds; }
 
-document.getElementById('loginBtn').addEventListener('click', () => {
-    if (!sysSettings) return alert("系統載入中，請稍後");
-    if (document.getElementById('adminPwd').value === sysSettings.password) {
-        document.getElementById('pwdOverlay').style.display = "none";
-        document.getElementById('mainContainer').style.display = "block";
-    } else {
-        alert("❌ 密碼錯誤，請詢問總控台！");
-    }
-});
-
+// ==========================================
+// 🔒 系統狀態驗證 (移除了密碼機制)
+// ==========================================
 const lockOverlay = document.createElement('div');
 lockOverlay.style = "display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); color:white; z-index:9999; flex-direction:column; justify-content:center; align-items:center; font-size:2em; font-weight:bold; text-align:center;";
 lockOverlay.innerHTML = "🔒<br>關卡已關閉輸入<br><span style='font-size:0.5em; color:#ccc; margin-top:10px;'>目前正在進行總結算</span>";
@@ -46,13 +39,6 @@ onSnapshot(doc(db, "settings", "global"), (docSnap) => {
         sysSettings = docSnap.data();
         
         lockOverlay.style.display = sysSettings.isLocked ? "flex" : "none";
-
-        if (document.getElementById('mainContainer').style.display === "block" && document.getElementById('adminPwd').value !== sysSettings.password) {
-            alert("⚠️ 系統密碼已更改，請重新登入！");
-            document.getElementById('pwdOverlay').style.display = "flex";
-            document.getElementById('mainContainer').style.display = "none";
-            document.getElementById('adminPwd').value = "";
-        }
 
         const teamSelect = document.getElementById('teamSelect');
         const currentSelected = teamSelect.value;
@@ -89,7 +75,7 @@ onSnapshot(collection(db, "record"), (snapshot) => {
     let teamBest = {};
     stationRecords.forEach(r => {
         let val = getVal(r);
-        if (val > maxVal || val < 0) return; // 🌟 防呆：超大數值將直接消失在關主介面中
+        if (val > maxVal || val < 0) return; 
 
         if (!teamBest[r.team]) teamBest[r.team] = r;
         else {
@@ -111,8 +97,6 @@ onSnapshot(collection(db, "record"), (snapshot) => {
     uniqueRecords.forEach((r, index) => {
         let val = getVal(r);
         let display = isTime ? formatTime(val) : `${val} ${currentConf.unit}`;
-        
-        // 🌟 改成黑色，並在前面加上獎盃，超清楚
         let rankColor = index < 3 ? "#000" : "#555";
         let rankText = index < 3 ? `🏆 第 ${index + 1} 名` : `第 ${index + 1} 名`;
 

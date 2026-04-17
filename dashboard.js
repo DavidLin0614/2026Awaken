@@ -135,7 +135,6 @@ onSnapshot(collection(db, "record"), (snapshot) => {
 // 3. 系統參數面板邏輯
 // ==========================================
 document.getElementById('openSettingsBtn').addEventListener('click', () => {
-    document.getElementById('set_pwd').value = sysSettings.password;
     document.getElementById('set_teams').value = sysSettings.numTeams;
     document.getElementById('set_stations').value = sysSettings.numStations;
     document.getElementById('set_maxMin').value = sysSettings.maxMin;
@@ -177,7 +176,6 @@ document.getElementById('saveSettingsBtn').addEventListener('click', async () =>
     }
     
     let newSettings = {
-        password: document.getElementById('set_pwd').value,
         numTeams: parseInt(document.getElementById('set_teams').value),
         numStations: newStations,
         maxMin: parseInt(document.getElementById('set_maxMin').value),

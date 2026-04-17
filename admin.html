@@ -6,7 +6,8 @@
     <title>關主專用後台</title>
     <style>
         body { font-family: "微軟正黑體", sans-serif; background-color: #f4f4f9; padding: 20px; text-align: center; margin: 0; }
-        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; display: none; /* 密碼輸入前先隱藏 */ }
+        /* 🌟 直接顯示主畫面 */
+        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; display: block; }
         h1 { color: #333; margin-top: 0; }
         .station-badge { background-color: #ff5722; color: white; padding: 5px 15px; border-radius: 20px; font-size: 1.2em; font-weight: bold; display: inline-block; margin-bottom: 20px; }
         .form-group { margin-bottom: 15px; text-align: left; }
@@ -18,25 +19,9 @@
         
         .record-item { display: flex; justify-content: space-between; background: #eee; padding: 10px; margin-bottom: 8px; border-radius: 5px; align-items: center; text-align: left; }
         .delete-btn { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.9em; width: auto; margin: 0; }
-
-        /* 密碼防護牆 */
-        #pwdOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; color: white; padding: 20px; box-sizing: border-box;
-        }
-        #pwdOverlay input { width: 80%; max-width: 300px; text-align: center; margin-bottom: 15px; }
-        #pwdOverlay button { width: 80%; max-width: 300px; background: #e67e22; }
     </style>
 </head>
 <body>
-
-    <!-- 🔒 密碼防護牆 -->
-    <div id="pwdOverlay">
-        <h2>🔒 關主系統登入</h2>
-        <p>請輸入總控台設定的通關密碼</p>
-        <input type="password" id="adminPwd" placeholder="請輸入密碼">
-        <button id="loginBtn">登入系統</button>
-    </div>
 
     <!-- 關主操作主畫面 -->
     <div class="container" id="mainContainer">
@@ -44,11 +29,9 @@
         
         <div class="form-group">
             <label>選擇闖關隊伍：</label>
-            <!-- 選單會由程式自動根據「總隊數」產生 -->
             <select id="teamSelect"></select>
         </div>
 
-        <!-- ⏱️ 計時模式輸入框 (預設顯示) -->
         <div class="form-group" id="timeInputGroup">
             <label>花費時間 (最大限制會自動套用)：</label>
             <div class="time-inputs">
@@ -57,7 +40,6 @@
             </div>
         </div>
 
-        <!-- 🎯 計分模式輸入框 (預設隱藏) -->
         <div class="form-group" id="scoreInputGroup" style="display: none;">
             <label id="scoreLabel">獲得分數：</label>
             <input type="number" id="scoreInput" placeholder="請輸入數值" min="0">
@@ -67,7 +49,7 @@
 
         <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
         <h3 style="margin-top: 0;">本關目前所有紀錄 🏆</h3>
-        <p style="font-size:0.8em; color:#888;">(前三名以金色標示，可刪除輸入錯誤的紀錄)</p>
+        <p style="font-size:0.8em; color:#888;">(前三名以獎盃標示，可刪除輸入錯誤的紀錄)</p>
         <div id="stationLeaderboard">
             <p style="color: #888;">目前尚無成績</p>
         </div>
