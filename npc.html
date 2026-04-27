@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>牧者 NPC 加分站</title>
+    <style>
+        body { font-family: "微軟正黑體", sans-serif; background-color: #f4f4f9; padding: 15px; text-align: center; margin: 0; }
+        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; display: none; }
+        h1 { color: #8e44ad; margin-top: 0; margin-bottom: 5px; font-size: 1.5em; }
+        .npc-badge { background-color: #8e44ad; color: white; padding: 5px 15px; border-radius: 20px; font-size: 1.1em; font-weight: bold; display: inline-block; margin-bottom: 15px; }
+        
+        .form-group { margin-bottom: 15px; text-align: left; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #444; }
+        select, input { width: 100%; padding: 12px; font-size: 1.1em; border: 2px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { background-color: #8e44ad; color: white; border: none; padding: 15px; width: 100%; font-size: 1.2em; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        button:hover { filter: brightness(1.1); }
+        
+        /* 戰況分析面板 */
+        .tier-panel { background: #ecf0f1; border-radius: 8px; padding: 10px; text-align: left; margin-bottom: 20px; border: 1px solid #bdc3c7; }
+        .tier-panel h3 { margin: 0 0 10px 0; color: #2c3e50; font-size: 1.1em; text-align: center; border-bottom: 1px dashed #bdc3c7; padding-bottom: 5px; }
+        .tier-row { display: flex; margin-bottom: 5px; font-size: 0.9em; }
+        .tier-label { width: 60px; font-weight: bold; flex-shrink: 0; }
+        .tier-teams { color: #555; }
+        .t-top { color: #c0392b; } .t-mid1 { color: #d35400; } .t-mid2 { color: #27ae60; } .t-bot { color: #2980b9; font-weight: bold;}
+
+        .record-item { display: flex; justify-content: space-between; background: #eee; padding: 10px; margin-bottom: 8px; border-radius: 5px; align-items: center; text-align: left; }
+        .delete-btn { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.9em; width: auto; margin: 0; }
+
+        /* 登入防護牆 */
+        #loginOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #8e44ad;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; color: white; padding: 20px; box-sizing: border-box;
+        }
+        #loginOverlay input { width: 80%; max-width: 300px; text-align: center; margin-bottom: 15px; border-radius: 5px; padding: 12px; font-size: 1.1em; border:none; }
+        #loginOverlay button { width: 80%; max-width: 300px; background: #f1c40f; color: #333; }
+    </style>
+</head>
+<body>
+
+    <!-- 👤 NPC 登入牆 -->
+    <div id="loginOverlay">
+        <h2 style="margin-top:0;">👋 歡迎牧者 / NPC</h2>
+        <p>請輸入您的名稱 (紀錄加分用)</p>
+        <input type="text" id="npcNameInput" placeholder="例如：約翰牧師">
+        <button id="loginBtn">進入加分系統</button>
+    </div>
+
+    <!-- 主畫面 -->
+    <div class="container" id="mainContainer">
+        <h1>🌟 神秘 NPC 加分站</h1>
+        <div class="npc-badge" id="npcDisplay">身分：未知</div>
+        
+        <!-- 戰況分析 (弱勢隊伍提示) -->
+        <div class="tier-panel">
+            <h3>📊 目前各隊戰況 (即時運算)</h3>
+            <div class="tier-row"><div class="tier-label t-top">上：</div><div class="tier-teams" id="tier1">載入中...</div></div>
+            <div class="tier-row"><div class="tier-label t-mid1">中上：</div><div class="tier-teams" id="tier2">載入中...</div></div>
+            <div class="tier-row"><div class="tier-label t-mid2">中下：</div><div class="tier-teams" id="tier3">載入中...</div></div>
+            <div class="tier-row"><div class="tier-label t-bot">下：</div><div class="tier-teams" id="tier4">載入中...</div></div>
+            <p style="font-size:0.75em; color:#888; margin: 5px 0 0 0; text-align:center;">(建議可以多幫助處於「下」的弱勢隊伍喔！)</p>
+        </div>
+
+        <div class="form-group">
+            <label>選擇加分隊伍：</label>
+            <select id="teamSelect"></select>
+        </div>
+
+        <div class="form-group">
+            <label>加分額度 (分)：</label>
+            <input type="number" id="bonusScoreInput" placeholder="請輸入加分分數" min="1">
+        </div>
+
+        <button id="submitBtn">送出魔法加分 ✨</button>
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
+        <h3 style="margin-top: 0;">📜 我的加分紀錄</h3>
+        <div id="npcHistory">
+            <p style="color: #888;">目前尚無紀錄</p>
+        </div>
+    </div>
+
+    <script type="module" src="npc.js"></script>
+</body>
+</html>

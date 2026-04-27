@@ -7,22 +7,16 @@
     <link rel="stylesheet" href="style.css">
     <style>
         .grid-container { max-width: 1600px !important; }
-        
-        .control-panel { 
-            background: rgba(0,0,0,0.8); padding: 15px; border-radius: 10px; margin: 0 auto 20px auto; 
-            width: 100%; max-width: 1600px; display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap; 
-        }
-        .btn { 
-            flex: 1 1 12%; padding: 12px 5px; font-size: 1em; border-radius: 5px; cursor: pointer; 
-            border: none; font-weight: bold; transition: 0.2s; white-space: pre-line; line-height: 1.4; 
-        }
+        .control-panel { background: rgba(0,0,0,0.8); padding: 15px; border-radius: 10px; margin: 0 auto 20px auto; width: 100%; max-width: 1600px; display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap; }
+        .btn { flex: 1 1 12%; padding: 12px 5px; font-size: 1em; border-radius: 5px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; white-space: pre-line; line-height: 1.4; }
         .btn:hover { filter: brightness(1.2); }
         .btn-score { background: #f39c12; color: white; }
         .btn-export { background: #27ae60; color: white; }
+        .btn-setting { background: #3498db; color: white; }
+        .btn-base { background: #9b59b6; color: white; } /* 🌟 各隊總分按鈕專屬顏色 */
+        .btn-add { background: #1abc9c; color: white; } 
         .btn-toggle { background: #e74c3c; color: white; }
         .btn-toggle-screen { background: #8e44ad; color: white; }
-        .btn-setting { background: #3498db; color: white; }
-        .btn-add { background: #1abc9c; color: white; } /* 🌟 新增按鈕的專屬顏色 */
         .btn-danger { background: #c0392b; color: white; }
         
         .record-list { list-style: none; padding: 0; margin: 0; font-size: 0.9em; text-align: left; }
@@ -35,19 +29,17 @@
         .del-btn { background: #ff4d4d; }
 
         @media (max-width: 768px) { .btn { flex: 1 1 45%; font-size: 0.9em; } #dashboardBoard { grid-template-columns: 1fr !important; } }
-        
-        /* Modal 裡的排版微調 */
         .time-inputs { display: flex; gap: 10px; }
     </style>
 </head>
 <body>
-    <!-- 🌟 更新為你要的標題 -->
     <h1 style="margin-bottom: 10px;">👑 總控台 👑</h1>
     
     <div class="control-panel">
         <button class="btn btn-score" id="calcScoreBtn">🏆 結算總成績</button>
-        <button class="btn btn-export" id="exportBtn">📊 匯出資料 (CSV)</button>
+        <button class="btn btn-export" id="exportBtn">📊 匯出資料(CSV)</button>
         <button class="btn btn-setting" id="openSettingsBtn">⚙️ 系統參數設定</button>
+        <button class="btn btn-base" id="openTeamScoresBtn">📝 各隊起始總分</button>
         <button class="btn btn-add" id="openAddRecordBtn">➕ 新增資料</button>
         <button class="btn btn-toggle" id="lockSystemBtn">🔒 關閉輸入<br>(讀取中)</button>
         <button class="btn btn-toggle-screen" id="hideScreenBtn">🙈 隱藏大螢幕<br>(讀取中)</button>
@@ -65,8 +57,8 @@
                 <div class="form-group"><label>🚩 總關卡數</label><input type="number" id="set_stations" min="1"></div>
             </div>
             <div class="form-row">
-                <div class="form-group"><label>⏱️ 最大分鐘 (時間防呆)</label><input type="number" id="set_maxMin" placeholder="預設 59"></div>
-                <div class="form-group"><label>🎯 最大分數 (計分防呆)</label><input type="number" id="set_maxScore" placeholder="預設 999"></div>
+                <div class="form-group"><label>⏱️ 最大分鐘 (防呆)</label><input type="number" id="set_maxMin"></div>
+                <div class="form-group"><label>🎯 最大分數 (防呆)</label><input type="number" id="set_maxScore"></div>
             </div>
             <hr style="border:1px solid #7f8c8d; margin:15px 0;">
             <h3 style="margin-top:0; color:#ffd700;">🏆 總積分規則設定</h3>
@@ -77,7 +69,7 @@
                 <div class="form-group"><label>基本分</label><input type="number" id="set_sBase"></div>
             </div>
             <hr style="border:1px solid #7f8c8d; margin:15px 0;">
-            <h3 style="margin-top:0; color:#ffd700;">🎛️ 各關卡屬性設定 (計時/計分)</h3>
+            <h3 style="margin-top:0; color:#ffd700;">🎛️ 各關卡屬性設定</h3>
             <div id="stationConfigsContainer"></div>
             <div class="modal-btns">
                 <button class="btn btn-export" style="flex:1;" id="saveSettingsBtn">💾 儲存並套用</button>
@@ -86,22 +78,27 @@
         </div>
     </div>
 
-    <!-- ➕ 手動新增資料 Modal -->
+    <!-- 📝 各隊起始總分 Modal -->
+    <div class="modal-overlay" id="teamScoresModal">
+        <div class="modal-content">
+            <h2>📝 設定各隊起始總分</h2>
+            <p style="font-size:0.9em; color:#ccc;">(設定的總分會與關卡積分合併，供牧者判斷弱勢隊伍使用)</p>
+            <div id="teamScoresContainer" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+            <div class="modal-btns">
+                <button class="btn btn-base" style="flex:1;" id="saveTeamScoresBtn">💾 儲存總分</button>
+                <button class="btn btn-danger" style="flex:1;" id="closeTeamScoresBtn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ➕ 手動新增成績 Modal -->
     <div class="modal-overlay" id="addRecordModal">
         <div class="modal-content">
             <h2>➕ 手動新增成績</h2>
             <div class="form-row">
-                <div class="form-group">
-                    <label>🚩 選擇關卡</label>
-                    <select id="add_station"></select>
-                </div>
-                <div class="form-group">
-                    <label>👥 選擇隊伍</label>
-                    <select id="add_team"></select>
-                </div>
+                <div class="form-group"><label>🚩 選擇關卡</label><select id="add_station"></select></div>
+                <div class="form-group"><label>👥 選擇隊伍</label><select id="add_team"></select></div>
             </div>
-            
-            <!-- ⏱️ 計時模式 -->
             <div class="form-group" id="add_timeGroup">
                 <label>⏱️ 花費時間</label>
                 <div class="time-inputs">
@@ -109,13 +106,10 @@
                     <input type="number" id="add_sec" placeholder="秒" min="0" max="59">
                 </div>
             </div>
-
-            <!-- 🎯 計分模式 -->
             <div class="form-group" id="add_scoreGroup" style="display: none;">
                 <label id="add_scoreLabel">🎯 獲得數值</label>
                 <input type="number" id="add_score" placeholder="請輸入數值" min="0">
             </div>
-
             <div class="modal-btns">
                 <button class="btn btn-add" style="flex:1;" id="saveNewRecordBtn">🚀 確認新增</button>
                 <button class="btn btn-danger" style="flex:1;" id="closeAddRecordBtn">取消</button>
