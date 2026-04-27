@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>關主專用後台 (雙隊伍)</title>
+    <style>
+        body { font-family: "微軟正黑體", sans-serif; background-color: #f4f4f9; padding: 20px; text-align: center; margin: 0; }
+        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; display: block; }
+        h1 { color: #333; margin-top: 0; }
+        .station-badge { background-color: #ff5722; color: white; padding: 5px 15px; border-radius: 20px; font-size: 1.2em; font-weight: bold; display: inline-block; margin-bottom: 20px; }
+        .station-badge.pk { background-color: #e74c3c; }
+        .station-badge.coop { background-color: #3498db; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #444; }
+        select { width: 100%; padding: 12px; font-size: 1.1em; border: 2px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { background-color: #4CAF50; color: white; border: none; padding: 15px; width: 100%; font-size: 1.2em; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        button:hover { background-color: #45a049; }
+        .record-item { display: flex; justify-content: space-between; background: #eee; padding: 10px; margin-bottom: 8px; border-radius: 5px; align-items: center; text-align: left; border-left: 5px solid #ccc; }
+        .record-item.pk { border-left-color: #e74c3c; }
+        .record-item.coop { border-left-color: #3498db; }
+        .delete-btn { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.9em; width: auto; margin: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="mainContainer">
+        <div class="station-badge" id="stationDisplay">正在載入關卡...</div>
+        
+        <div class="form-group"><label>🚩 選擇隊伍 A：</label><select id="teamASelect"></select></div>
+        <div class="form-group"><label>🚩 選擇隊伍 B：</label><select id="teamBSelect"></select></div>
+
+        <div class="form-group" id="winnerGroup" style="display: none; background:#ffeaa7; padding:10px; border-radius:5px;">
+            <label style="color:#e74c3c; font-size:1.1em;">🏆 哪一隊獲勝？</label>
+            <select id="winnerSelect" style="border-color:#e74c3c; font-weight:bold;"></select>
+        </div>
+
+        <button id="submitBtn">送出成績 🚀</button>
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
+        <h3 style="margin-top: 0;">📜 本關紀錄 (若輸入錯請刪除重送)</h3>
+        <div id="stationLeaderboard"><p style="color: #888;">目前尚無成績</p></div>
+    </div>
+
+    <script type="module" src="admin_2.js"></script>
+</body>
+</html>
