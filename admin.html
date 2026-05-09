@@ -10,7 +10,7 @@
         h1 { color: #333; margin-top: 0; }
         .station-badge { color: white; padding: 5px 15px; border-radius: 20px; font-size: 1.2em; font-weight: bold; display: inline-block; margin-bottom: 10px; background-color: #ff5722; }
         
-        .status-btn { width: 100%; padding: 10px; border: none; border-radius: 5px; font-size: 1.1em; font-weight: bold; cursor: pointer; margin-bottom: 20px; transition: 0.3s; }
+        .status-btn { width: 100%; padding: 12px; border: none; border-radius: 5px; font-size: 1.1em; font-weight: bold; cursor: pointer; margin-bottom: 20px; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .status-green { background-color: #2ecc71; color: white; }
         .status-red { background-color: #e74c3c; color: white; }
 
@@ -19,11 +19,15 @@
         select, input { width: 100%; padding: 12px; font-size: 1.1em; border: 2px solid #ddd; border-radius: 5px; box-sizing: border-box; }
         .time-inputs { display: flex; gap: 10px; }
         
-        /* 🌟 一鍵給讚的按鈕樣式 */
-        .like-btn { background-color: #f1c40f; color: #333; border: none; padding: 15px; width: 100%; font-size: 1.2em; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 15px; transition: 0.2s;}
+        /* 🌟 並排的動作按鈕區塊 */
+        .action-row { display: flex; gap: 10px; margin-top: 20px; }
+        .action-row button { margin: 0; flex: 1; padding: 10px; font-size: 1.15em; border-radius: 5px; cursor: pointer; font-weight: bold; border: none; line-height: 1.4; transition: 0.2s; }
+        
+        .like-btn { background-color: #f1c40f; color: #333; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .like-btn:active { transform: scale(0.95); }
+        .like-btn:disabled { opacity: 0.6; cursor: not-allowed; background-color: #bdc3c7 !important; }
+        .submit { background-color: #4CAF50; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 
-        button.submit { background-color: #4CAF50; color: white; border: none; padding: 15px; width: 100%; font-size: 1.2em; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .record-item { display: flex; justify-content: space-between; background: #eee; padding: 10px; margin-bottom: 8px; border-radius: 5px; align-items: center; text-align: left; }
         .delete-btn { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.9em; width: auto; margin: 0; }
     </style>
@@ -38,11 +42,6 @@
 
         <div class="form-group"><label>選擇目前隊伍：</label><select id="teamSelect"></select></div>
 
-        <!-- 🌟 獨立的一鍵給讚系統 -->
-        <button id="instantLikeBtn" type="button" class="like-btn">
-            送出 1 個 👍 (給 <span id="likeTeamName">隊伍</span>)
-        </button>
-
         <div class="form-group" id="timeInputGroup">
             <label>花費時間：</label>
             <div class="time-inputs"><input type="number" id="minInput" placeholder="分" min="0"><input type="number" id="secInput" placeholder="秒" min="0" max="59"></div>
@@ -52,8 +51,15 @@
             <label id="scoreLabel">獲得分數：</label><input type="number" id="scoreInput" placeholder="請輸入數值" min="0">
         </div>
 
-        <!-- 送出成績與讚賞分離 -->
-        <button id="submitBtn" class="submit">送出最終成績 🚀</button>
+        <!-- 🌟 並排按鈕：左邊按讚，右邊送出成績 -->
+        <div class="action-row">
+            <button id="instantLikeBtn" type="button" class="like-btn">
+                送出 👍<br><small id="likeCountText">(0/3)</small>
+            </button>
+            <button id="submitBtn" class="submit">
+                送出成績<br>🚀
+            </button>
+        </div>
 
         <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
         <h3 style="margin-top: 0;">本關闖關紀錄 🏆</h3>

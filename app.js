@@ -76,7 +76,7 @@ function renderBoard() {
     chunkedTeams.forEach(chunk => {
         let likesHtml = chunk.map(t => `<p style="margin: 8px 0; color:#f1c40f; font-weight:bold; text-shadow:1px 1px 2px #000; font-size:1.15em;">${t}：👍 x ${teamLikes[t]}</p>`).join('');
         board.innerHTML += `
-            <div class="station-card" style="border-color:#f1c40f; background:rgba(241, 196, 15, 0.1); justify-content: center;">
+            <div class="station-card" style="border-color:#f1c40f; justify-content: center;">
                 <div>${likesHtml}</div>
             </div>
         `;
