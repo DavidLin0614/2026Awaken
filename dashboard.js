@@ -16,6 +16,7 @@ const db = getFirestore(app);
 let globalRecords =[];
 let sysSettings = {
     numTeams: 15, numStations: 15, maxMin: 59, maxScore: 999,
+    maxLikes: 3, likePoints: 10, stationStatus: {}, // 🌟 新增按讚與關卡狀態
     scoreRule: { top1: 300, top2: 200, top3: 100, base: 50 }, stationConfigs: {},
     isLocked: false, hideMain: false, teamBaseScores: {} // 🌟 新增各隊起始總分
 };
@@ -101,6 +102,8 @@ document.getElementById('openSettingsBtn').addEventListener('click', () => {
     document.getElementById('set_s2').value = sysSettings.scoreRule.top2;
     document.getElementById('set_s3').value = sysSettings.scoreRule.top3;
     document.getElementById('set_sBase').value = sysSettings.scoreRule.base;
+    document.getElementById('set_maxLikes').value = sysSettings.maxLikes || 3;
+    document.getElementById('set_likePoints').value = sysSettings.likePoints || 10;
 
     let confHtml = '';
     for(let i=1; i<=sysSettings.numStations; i++) {
@@ -122,6 +125,7 @@ document.getElementById('saveSettingsBtn').addEventListener('click', async () =>
     
     let newSettings = {
         numTeams: parseInt(document.getElementById('set_teams').value), numStations: newStations, maxMin: parseInt(document.getElementById('set_maxMin').value), maxScore: parseInt(document.getElementById('set_maxScore').value),
+        maxLikes: parseInt(document.getElementById('set_maxLikes').value), likePoints: parseInt(document.getElementById('set_likePoints').value),
         scoreRule: { top1: parseInt(document.getElementById('set_s1').value), top2: parseInt(document.getElementById('set_s2').value), top3: parseInt(document.getElementById('set_s3').value), base: parseInt(document.getElementById('set_sBase').value) },
         stationConfigs: configs
     };
@@ -189,8 +193,10 @@ document.getElementById('calcScoreBtn').addEventListener('click', () => {
     }
 
     // 🌟 結算 NPC 加分
-    globalRecords.filter(r => r.isNPC).forEach(r => {
-        if(teamScores[r.team] !== undefined) teamScores[r.team] += r.bonusScore;
+    globalRecords.forEach(r => {
+        if(!r.isNPC && r.likes > 0 && teamScores[r.team] !== undefined) {
+            teamScores[r.team] += (r.likes * (sysSettings.likePoints || 0));
+        }
     });
 
     let finalRanking = Object.keys(teamScores).map(team => {

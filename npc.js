@@ -115,10 +115,10 @@ function calculateLiveScores() {
         tiers[tIdx].push(item.team);
     });
 
-    document.getElementById('tier1').innerText = tiers[0].join(', ') || '無';
-    document.getElementById('tier2').innerText = tiers[1].join(', ') || '無';
-    document.getElementById('tier3').innerText = tiers[2].join(', ') || '無';
-    document.getElementById('tier4').innerText = tiers[3].join(', ') || '無';
+    document.getElementById('tier1').innerText = (tiers[0].join(', ') || '無') + ' 🌟';
+    document.getElementById('tier2').innerText = (tiers[1].join(', ') || '無') + ' 😊';
+    document.getElementById('tier3').innerText = (tiers[2].join(', ') || '無') + ' 💦';
+    document.getElementById('tier4').innerText = (tiers[3].join(', ') || '無') + ' 🥺';
 }
 
 // ==========================================
