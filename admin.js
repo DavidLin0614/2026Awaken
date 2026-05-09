@@ -1,16 +1,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyBo5iMRonG0rFu6ZuIBJFXzwnWF9xiAKgQ", authDomain: "awaken-c5fca.firebaseapp.com", projectId: "awaken-c5fca", storageBucket: "awaken-c5fca.firebasestorage.app"
-};
+const firebaseConfig = { apiKey: "AIzaSyBo5iMRonG0rFu6ZuIBJFXzwnWF9xiAKgQ", authDomain: "awaken-c5fca.firebaseapp.com", projectId: "awaken-c5fca", storageBucket: "awaken-c5fca.firebasestorage.app" };
 const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 const urlParams = new URLSearchParams(window.location.search); const currentStation = parseInt(urlParams.get('station')) || 1; 
 
-let sysSettings = null, currentConf = null, currentLikes = 0, isOccupied = false;
+let sysSettings = null, currentConf = null, isOccupied = false;
 function getVal(r) { return r.recordValue !== undefined ? r.recordValue : r.time_seconds; }
 
-// 處理狀態按鈕切換
 const statusBtn = document.getElementById('statusToggleBtn');
 statusBtn.addEventListener('click', async () => {
     isOccupied = !isOccupied;
@@ -20,19 +17,36 @@ statusBtn.addEventListener('click', async () => {
     await updateDoc(doc(db, "settings", "global"), { stationStatus: newStatus });
 });
 
-// 處理給讚按鈕
-document.getElementById('btnPlusLike').addEventListener('click', () => {
-    if(currentLikes < (sysSettings.maxLikes || 3)) { currentLikes++; document.getElementById('likeCount').innerText = currentLikes; }
-});
-document.getElementById('btnMinusLike').addEventListener('click', () => {
-    if(currentLikes > 0) { currentLikes--; document.getElementById('likeCount').innerText = currentLikes; }
+// 同步選單隊伍名稱到按讚按鈕上
+const teamSelect = document.getElementById('teamSelect');
+const likeTeamName = document.getElementById('likeTeamName');
+teamSelect.addEventListener('change', (e) => { likeTeamName.innerText = e.target.value; });
+
+// 🌟 一鍵送出讚 (獨立紀錄，不影響闖關時間)
+document.getElementById('instantLikeBtn').addEventListener('click', async () => {
+    const team = teamSelect.value;
+    const now = new Date(); const nowTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    const btn = document.getElementById('instantLikeBtn');
+
+    try {
+        btn.innerText = "傳送中..."; btn.disabled = true;
+        // 送出一筆「純按讚」的特殊紀錄
+        await addDoc(collection(db, "record"), { station: currentStation, team: team, likes: 1, isLikeOnly: true, timestamp: nowTime });
+        
+        btn.innerText = `✅ 成功給 ${team} 1 個 👍`;
+        btn.style.background = "#2ecc71"; btn.style.color = "white";
+        
+        // 1.5 秒後恢復按鈕狀態
+        setTimeout(() => {
+            btn.innerHTML = `送出 1 個 👍 (給 <span id="likeTeamName">${teamSelect.value}</span>)`;
+            btn.style.background = "#f1c40f"; btn.style.color = "#333"; btn.disabled = false;
+        }, 1500);
+    } catch (error) { alert("發生錯誤！"); btn.disabled = false; }
 });
 
 onSnapshot(doc(db, "settings", "global"), (docSnap) => {
     if (docSnap.exists()) {
         sysSettings = docSnap.data();
-        
-        // 更新空關狀態按鈕
         isOccupied = (sysSettings.stationStatus && sysSettings.stationStatus[currentStation] === 'red');
         if(isOccupied) {
             statusBtn.className = "status-btn status-red"; statusBtn.innerText = "🔴 闖關中 (點擊切換為空關)";
@@ -40,9 +54,10 @@ onSnapshot(doc(db, "settings", "global"), (docSnap) => {
             statusBtn.className = "status-btn status-green"; statusBtn.innerText = "🟢 目前為空關 (點擊切換為闖關中)";
         }
 
-        const teamSelect = document.getElementById('teamSelect'); const currentSelected = teamSelect.value; teamSelect.innerHTML = "";
+        const currentSelected = teamSelect.value; teamSelect.innerHTML = "";
         for (let i = 1; i <= sysSettings.numTeams; i++) teamSelect.innerHTML += `<option value="第${i}隊">第 ${i} 隊</option>`;
         if (currentSelected) teamSelect.value = currentSelected;
+        likeTeamName.innerText = teamSelect.value; 
 
         currentConf = sysSettings.stationConfigs[currentStation] || { type: 'time', unit: '' };
         document.getElementById('stationDisplay').innerText = `第 ${currentStation} 關 (${currentConf.type==='time'?'⏱️計時':'🎯計分'})`;
@@ -57,18 +72,16 @@ onSnapshot(doc(db, "settings", "global"), (docSnap) => {
 
 onSnapshot(collection(db, "record"), (snapshot) => {
     if (!currentConf) return; const allRecords =[]; snapshot.forEach((d) => allRecords.push({ id: d.id, ...d.data() }));
-    let stationRecords = allRecords.filter(r => r.station === currentStation);
+    // 🌟 這裡過濾掉「純按讚」紀錄，不要顯示在排行榜裡干擾關主
+    let stationRecords = allRecords.filter(r => r.station === currentStation && !r.isLikeOnly);
     const leaderboardDiv = document.getElementById('stationLeaderboard'); leaderboardDiv.innerHTML = ""; 
     
     if(stationRecords.length === 0) { leaderboardDiv.innerHTML = "<p style='color: #888;'>目前尚無成績</p>"; return; }
     
-    // 列出所有紀錄 (最新的在上面)
     stationRecords.reverse().forEach((r) => {
         let val = getVal(r); let display = (currentConf.type === 'time') ? `${Math.floor(val/60)}分${val%60}秒` : `${val} ${currentConf.unit}`;
-        let likesHtml = r.likes > 0 ? ` <span style="color:#e67e22;font-size:0.8em;">(👍x${r.likes})</span>` : "";
-        
         const item = document.createElement('div'); item.className = 'record-item';
-        item.innerHTML = `<span><b>${r.team}</b> ${likesHtml}<br><small style="color:#555;">(${display})</small></span><button class="delete-btn" data-id="${r.id}">刪除</button>`;
+        item.innerHTML = `<span><b>${r.team}</b><br><small style="color:#555;">(${display})</small></span><button class="delete-btn" data-id="${r.id}">刪除</button>`;
         leaderboardDiv.appendChild(item);
     });
 
@@ -77,8 +90,9 @@ onSnapshot(collection(db, "record"), (snapshot) => {
     }));
 });
 
+// 送出正式成績 (拔除了 currentLikes)
 document.getElementById('submitBtn').addEventListener('click', async () => {
-    const team = document.getElementById('teamSelect').value;
+    const team = teamSelect.value;
     let finalValue = 0; let isTime = currentConf.type === 'time';
 
     if (isTime) {
@@ -98,13 +112,11 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
 
     try {
         document.getElementById('submitBtn').innerText = "傳送中...";
-        await addDoc(collection(db, "record"), { station: currentStation, team: team, recordValue: finalValue, time_seconds: finalValue, likes: currentLikes, timestamp: nowTime });
+        await addDoc(collection(db, "record"), { station: currentStation, team: team, recordValue: finalValue, time_seconds: finalValue, timestamp: nowTime });
         
-        // 送出後清空並切換回綠燈
         document.getElementById('minInput').value = ""; document.getElementById('secInput').value = ""; document.getElementById('scoreInput').value = "";
-        currentLikes = 0; document.getElementById('likeCount').innerText = "0";
-        if(isOccupied) document.getElementById('statusToggleBtn').click(); // 自動變回空關
+        if(isOccupied) document.getElementById('statusToggleBtn').click(); 
 
-        document.getElementById('submitBtn').innerText = "送出成績與讚賞 🚀";
-    } catch (error) { alert("發生錯誤！"); document.getElementById('submitBtn').innerText = "送出成績與讚賞 🚀"; }
+        document.getElementById('submitBtn').innerText = "送出最終成績 🚀";
+    } catch (error) { alert("發生錯誤！"); document.getElementById('submitBtn').innerText = "送出最終成績 🚀"; }
 });

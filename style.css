@@ -88,19 +88,19 @@ summary { text-align: center; font-weight: bold; color: #ffd700; outline: none; 
 }
 
 /* ========================================== */
-/* 🌟 電腦版終極自適應 (筆電看得完，大螢幕不跑版) */
+/* 🌟 電腦版終極自適應 (一列 6 個，字體稍微縮小) */
 /* ========================================== */
 @media (min-width: 1200px) { 
     .grid-container { 
-        grid-template-columns: repeat(5, 1fr); 
-        gap: 15px;
-        width: 95%;
-        max-width: 1350px; /* 🌟 限制最大寬度，大螢幕不會無限長胖，維持筆電的完美比例 */
+        grid-template-columns: repeat(6, 1fr); /* 🌟 改成一列 6 個 */
+        gap: 12px;
+        width: 98%;
+        max-width: 1500px; 
     } 
     .station-card {
-        padding: 1.5vh 1vw; /* 🌟 使用 vh (螢幕高度百分比)縮放邊距 */
-        min-height: 24vh;   /* 🌟 讓卡片高度跟著螢幕高度動態縮放，筆電一頁看完全部！ */
+        padding: 1.2vh 0.8vw; 
+        min-height: 22vh;   
     }
-    .station-title { font-size: clamp(1.2rem, 3vh, 1.6rem); margin-bottom: 1vh; }
-    .station-card p { font-size: clamp(1rem, 2.2vh, 1.3rem); margin: 0.8vh 0; }
+    .station-title { font-size: clamp(1rem, 2.3vh, 1.3rem); margin-bottom: 1vh; }
+    .station-card p, .record-list li { font-size: clamp(0.9rem, 2vh, 1.1rem); margin: 0.6vh 0; }
 }
