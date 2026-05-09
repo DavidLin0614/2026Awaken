@@ -20,9 +20,18 @@ hideOverlay.id = "hideOverlay"; hideOverlay.innerHTML = "🏆<br>營會成績結
 document.body.appendChild(hideOverlay);
 
 function renderBoard() {
-    const board = document.getElementById("board"); board.innerHTML = ""; 
-    let teamLikes = {}; // 計算各隊總讚數
+    const board = document.getElementById("board"); 
+    board.innerHTML = ""; 
+    
+    // 🌟 1. 先全域計算所有隊伍拿到的總讚數
+    let teamLikes = {}; 
+    globalRecords.forEach(r => {
+        if(!r.isNPC && r.likes > 0) { 
+            teamLikes[r.team] = (teamLikes[r.team] || 0) + r.likes; 
+        }
+    });
 
+    // 🌟 2. 渲染各關卡卡片
     for (let i = 1; i <= sysSettings.numStations; i++) {
         let stationRecords = globalRecords.filter(r => r.station === i);
         let conf = sysSettings.stationConfigs[i] || { type: 'time', unit: '' };
@@ -31,9 +40,6 @@ function renderBoard() {
 
         let teamBest = {};
         stationRecords.forEach(r => {
-            // 順便統計讚數
-            if(!r.isNPC && r.likes > 0) { teamLikes[r.team] = (teamLikes[r.team] || 0) + r.likes; }
-
             let val = getVal(r);
             if (val > maxVal || val < 0) return;
             if (!teamBest[r.team]) teamBest[r.team] = r;
@@ -48,30 +54,40 @@ function renderBoard() {
         let topHtml =[];
         for(let j = 0; j < 3; j++) {
             if(uniqueRecords[j]) {
+                let teamName = uniqueRecords[j].team;
                 let val = getVal(uniqueRecords[j]);
-                topHtml.push(`${uniqueRecords[j].team} (${isTime ? formatTime(val) : `${val} ${conf.unit}`})`);
-            } else topHtml.push("尚未產生");
+                let display = isTime ? formatTime(val) : `${val} ${conf.unit}`;
+                
+                // 🌟 把該隊伍的「總讚數」直接接在後面
+                let likes = teamLikes[teamName] || 0;
+                let likeStr = likes > 0 ? ` <span style="color:#f1c40f; font-weight:bold; text-shadow:1px 1px 2px #000;">👍x${likes}</span>` : "";
+                
+                topHtml.push(`${teamName} (${display})${likeStr}`);
+            } else {
+                topHtml.push("尚未產生");
+            }
         }
 
-        // 判斷紅綠燈
         let statusDot = (sysSettings.stationStatus && sysSettings.stationStatus[i] === 'red') ? '🔴' : '🟢';
 
         board.innerHTML += `
             <div class="station-card">
                 <div class="station-title">${statusDot} 第 ${i} 關</div>
-                <p>🥇 ${topHtml[0]}</p><p>🥈 ${topHtml[1]}</p><p>🥉 ${topHtml[2]}</p>
+                <p>🥇 ${topHtml[0]}</p>
+                <p>🥈 ${topHtml[1]}</p>
+                <p>🥉 ${topHtml[2]}</p>
             </div>
         `;
     }
 
-    // 🏆 新增：營會讚美大賞區塊
+    // (保留原本的總讚數排行榜框框，放在最後面當作總結，因為真的很實用！)
     let likesArr = Object.keys(teamLikes).map(t => ({ team: t, likes: teamLikes[t] })).sort((a,b) => b.likes - a.likes);
     if(likesArr.length > 0) {
         let likesHtml = likesArr.map(item => `<p style="margin:5px 0;">${item.team}：👍 x ${item.likes}</p>`).join('');
         board.innerHTML += `
-            <div class="station-card" style="border-color:#1abc9c; background:rgba(26, 188, 156, 0.2);">
-                <div class="station-title" style="color:#1abc9c;">🌟 態度讚美榜 🌟</div>
-                <div style="max-height:120px; overflow-y:auto; font-size:0.9em;">${likesHtml}</div>
+            <div class="station-card dashboard-card" style="border-color:#1abc9c; background:rgba(26, 188, 156, 0.2); justify-content:flex-start;">
+                <div class="station-title" style="color:#1abc9c; margin-bottom:10px;">🌟 態度讚美總榜 🌟</div>
+                <div style="overflow-y:auto; font-size:1em;">${likesHtml}</div>
             </div>
         `;
     }
