@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>總控台 (雙隊伍賽制)</title>
+    <title>D3 總控台 (純PK勝負制)</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .grid-container { max-width: 1600px !important; }
+        .grid-container { max-width: 1600px !important; display: block; }
         .control-panel { background: rgba(0,0,0,0.8); padding: 15px; border-radius: 10px; margin: 0 auto 20px auto; width: 100%; max-width: 1600px; display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap; }
         .btn { flex: 1 1 12%; padding: 12px 5px; font-size: 1em; border-radius: 5px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; white-space: pre-line; line-height: 1.4; }
         .btn:hover { filter: brightness(1.2); }
@@ -17,67 +17,75 @@
         .btn-add { background: #1abc9c; color: white; } 
         .btn-toggle { background: #e74c3c; color: white; }
         .btn-danger { background: #c0392b; color: white; }
+        .btn-schedule { background: #e67e22; color: white; }
         
         .record-list { list-style: none; padding: 0; margin: 0; font-size: 0.9em; text-align: left; }
-        .record-list li { background: rgba(255,255,255,0.1); margin-bottom: 8px; padding: 8px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #ccc; }
-        .record-list li.pk-record { border-left-color: #e74c3c; }
-        .record-list li.coop-record { border-left-color: #3498db; }
-        .record-info { line-height: 1.4; width: 100%; }
-        .timestamp { font-size: 0.8em; color: #aaa; }
-        
+        .record-list li { background: rgba(255,255,255,0.1); margin-bottom: 8px; padding: 8px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #e74c3c; }
         .action-btns button { border: none; padding: 5px 8px; border-radius: 3px; cursor: pointer; color: white; font-weight: bold; background: #ff4d4d; }
 
+        .dashboard-card { margin-bottom: 15px; width: 100%; height: auto !important; max-height: 300px;}
+        textarea { width: 100%; height: 150px; padding: 10px; font-size: 1.1em; font-family: monospace; }
         @media (max-width: 768px) { .btn { flex: 1 1 45%; font-size: 0.9em; } }
     </style>
 </head>
 <body>
-    <h1 style="margin-bottom: 10px;">👑 總控台 (PK/合作制) 👑</h1>
+    <h1 style="margin-bottom: 10px;">⚔️ 總控台 (純 PK 勝負制) ⚔️</h1>
     
     <div class="control-panel">
-        <button class="btn btn-score" id="calcScoreBtn">🏆 結算總成績</button>
+        <button class="btn btn-score" id="calcScoreBtn">🏆 結算最終成績</button>
         <button class="btn btn-export" id="exportBtn">📊 匯出資料(CSV)</button>
-        <button class="btn btn-setting" id="openSettingsBtn">⚙️ 系統與分數設定</button>
-        <button class="btn btn-base" id="openTeamScoresBtn">📝 各隊起始總分</button>
-        <button class="btn btn-add" id="openAddRecordBtn">➕ 新增資料</button>
+        <button class="btn btn-schedule" id="openScheduleBtn">📅 匯入 Excel 賽程表</button>
+        <button class="btn btn-setting" id="openSettingsBtn">⚙️ 基礎與按讚設定</button>
+        <button class="btn btn-base" id="openRankScoresBtn">🏆 設定名次給分</button>
+        <button class="btn btn-add" id="openAddRecordBtn">➕ 手動新增戰績</button>
         <button class="btn btn-toggle" id="lockSystemBtn">🔒 關閉輸入<br>(讀取中)</button>
         <button class="btn btn-danger" id="clearAllBtn">💣 一鍵清空</button>
     </div>
 
-    <div class="grid-container" id="dashboardBoard"></div>
+    <div class="grid-container" id="dashboardBoard" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;"></div>
 
-    <!-- ⚙️ 系統參數設定 Modal -->
-    <div class="modal-overlay" id="settingsModal">
+    <!-- 📅 匯入賽程表 Modal -->
+    <div class="modal-overlay" id="scheduleModal">
         <div class="modal-content">
-            <h2>⚙️ 賽制參數設定</h2>
-            <div class="form-row">
-                <div class="form-group"><label>👥 總隊伍數</label><input type="number" id="set_teams" min="1"></div>
-                <div class="form-group"><label>🚩 總關卡數</label><input type="number" id="set_stations" min="1"></div>
-            </div>
-            <hr style="border:1px solid #7f8c8d; margin:15px 0;">
-            <h3 style="margin-top:0; color:#ffd700;">🏆 得分規則設定</h3>
-            <div class="form-row">
-                <div class="form-group"><label>⚔️ PK 贏家加分</label><input type="number" id="set_pkWin"></div>
-                <div class="form-group"><label>⚔️ PK 輸家加分</label><input type="number" id="set_pkLose"></div>
-                <div class="form-group"><label>🤝 合作過關加分</label><input type="number" id="set_coop"></div>
-            </div>
-            <hr style="border:1px solid #7f8c8d; margin:15px 0;">
-            <h3 style="margin-top:0; color:#ffd700;">🎛️ 各關卡屬性設定</h3>
-            <div id="stationConfigsContainer"></div>
+            <h2>📅 匯入 Excel 賽程表</h2>
+            <p style="color:#aaa; font-size:0.9em;">請從 Excel 複製後直接貼上。欄位順序必須是：<br><b style="color:#f1c40f;">輪次(數字) | 關卡(數字) | 隊伍A名稱 | 隊伍B名稱</b></p>
+            <textarea id="scheduleInput" placeholder="例如：&#10;1&#9;1&#9;第1隊&#9;第2隊&#10;1&#9;2&#9;第3隊&#9;第4隊"></textarea>
             <div class="modal-btns">
-                <button class="btn btn-export" style="flex:1;" id="saveSettingsBtn">💾 儲存並套用</button>
-                <button class="btn btn-danger" style="flex:1;" id="closeSettingsBtn">取消</button>
+                <button class="btn btn-add" style="flex:1;" id="saveScheduleBtn">💾 解析並儲存賽程</button>
+                <button class="btn btn-danger" style="flex:1;" id="closeScheduleBtn">取消</button>
             </div>
         </div>
     </div>
 
-    <!-- 📝 各隊起始總分 Modal -->
-    <div class="modal-overlay" id="teamScoresModal">
+    <!-- 🏆 設定名次給分 Modal -->
+    <div class="modal-overlay" id="rankScoresModal">
         <div class="modal-content">
-            <h2>📝 設定各隊起始總分</h2>
-            <div id="teamScoresContainer" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+            <h2>🏆 設定名次對應給分</h2>
+            <p style="color:#aaa; font-size:0.9em;">(營會結束後，會依據勝率排名，給予各隊以下設定的分數)</p>
+            <div id="rankScoresContainer" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
             <div class="modal-btns">
-                <button class="btn btn-base" style="flex:1;" id="saveTeamScoresBtn">💾 儲存總分</button>
-                <button class="btn btn-danger" style="flex:1;" id="closeTeamScoresBtn">取消</button>
+                <button class="btn btn-score" style="flex:1;" id="saveRankScoresBtn">💾 儲存給分規則</button>
+                <button class="btn btn-danger" style="flex:1;" id="closeRankScoresBtn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ⚙️ 系統參數設定 Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal-content">
+            <h2>⚙️ 基礎與按讚設定</h2>
+            <div class="form-row">
+                <div class="form-group"><label>👥 總隊伍數</label><input type="number" id="set_teams" min="1"></div>
+                <div class="form-group"><label>🚩 總關卡數</label><input type="number" id="set_stations" min="1"></div>
+            </div>
+            <hr style="border:1px dashed #7f8c8d; margin:15px 0;">
+            <div class="form-row">
+                <div class="form-group"><label>👍 每關/每輪 可給讚數</label><input type="number" id="set_maxLikes" min="0" value="3"></div>
+                <div class="form-group"><label>🪙 一個讚加多少總分</label><input type="number" id="set_likePoints" min="0" value="10"></div>
+            </div>
+            <div class="modal-btns">
+                <button class="btn btn-export" style="flex:1;" id="saveSettingsBtn">💾 儲存</button>
+                <button class="btn btn-danger" style="flex:1;" id="closeSettingsBtn">取消</button>
             </div>
         </div>
     </div>
@@ -85,14 +93,14 @@
     <!-- ➕ 手動新增成績 Modal -->
     <div class="modal-overlay" id="addRecordModal">
         <div class="modal-content">
-            <h2>➕ 手動新增對戰紀錄</h2>
+            <h2>➕ 手動補登戰績</h2>
             <div class="form-group"><label>🚩 選擇關卡</label><select id="add_station"></select></div>
             <div class="form-row">
-                <div class="form-group"><label>👥 選擇隊伍 A</label><select id="add_teamA"></select></div>
-                <div class="form-group"><label>👥 選擇隊伍 B</label><select id="add_teamB"></select></div>
+                <div class="form-group"><label>👥 隊伍 A</label><select id="add_teamA"></select></div>
+                <div class="form-group"><label>👥 隊伍 B</label><select id="add_teamB"></select></div>
             </div>
-            <div class="form-group" id="add_winnerGroup" style="display: none;">
-                <label style="color:#e74c3c;">🏆 哪一隊獲勝？ (PK制)</label>
+            <div class="form-group">
+                <label style="color:#e74c3c;">🏆 哪一隊獲勝？</label>
                 <select id="add_winner"></select>
             </div>
             <div class="modal-btns">

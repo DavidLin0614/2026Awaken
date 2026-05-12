@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>戰績排行榜</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .leaderboard-container { width: 95%; max-width: 1000px; margin: 20px auto; display: flex; flex-direction: column; gap: 10px; }
+        .leaderboard-row { 
+            background: rgba(0, 0, 0, 0.7); border: 2px solid #ffd700; border-radius: 10px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 15px 25px; font-size: 1.5em; font-weight: bold; 
+        }
+        .leaderboard-row.top1 { background: rgba(241, 196, 15, 0.3); border-color: #f1c40f; }
+        .leaderboard-row.top2 { background: rgba(189, 195, 199, 0.3); border-color: #bdc3c7; }
+        .leaderboard-row.top3 { background: rgba(211, 84, 0, 0.3); border-color: #d35400; }
+        
+        .rank-badge { width: 50px; text-align: center; font-size: 1.2em; color: #ffd700; }
+        .team-name { flex: 1; text-align: left; padding-left: 20px; color: white; }
+        .win-loss { flex: 1; text-align: center; color: #2ecc71; }
+        .likes { width: 120px; text-align: right; color: #f1c40f; text-shadow: 1px 1px 2px #000; }
+
+        @media (max-width: 768px) {
+            .leaderboard-row { font-size: 1.1em; padding: 10px 15px; }
+            .team-name { padding-left: 10px; }
+            .likes { width: 80px; }
+        }
+    </style>
+</head>
+<body>
+    <h1>⚔️ 戰績排行榜 ⚔️</h1>
+    <div class="leaderboard-container" id="leaderboard">
+        <!-- 戰績會自動插入這裡 -->
+    </div>
+    <script type="module" src="app_2.js"></script>
+</body>
+</html>

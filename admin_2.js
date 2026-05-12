@@ -1,41 +1,54 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyBo5iMRonG0rFu6ZuIBJFXzwnWF9xiAKgQ",
-    authDomain: "awaken-c5fca.firebaseapp.com",
-    projectId: "awaken-c5fca",
-    storageBucket: "awaken-c5fca.firebasestorage.app"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const firebaseConfig = { apiKey: "AIzaSyBo5iMRonG0rFu6ZuIBJFXzwnWF9xiAKgQ", authDomain: "awaken-c5fca.firebaseapp.com", projectId: "awaken-c5fca", storageBucket: "awaken-c5fca.firebasestorage.app" };
+const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
 const urlParams = new URLSearchParams(window.location.search);
 const currentStation = parseInt(urlParams.get('station')) || 1; 
 
-let sysSettings = null;
-let currentConf = null;
+let sysSettings = null, sessionLikes = 0;
 
-const lockOverlay = document.createElement('div');
-lockOverlay.style = "display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); color:white; z-index:9999; flex-direction:column; justify-content:center; align-items:center; font-size:2em; font-weight:bold; text-align:center;";
-lockOverlay.innerHTML = "🔒<br>關卡已關閉輸入<br><span style='font-size:0.5em; color:#ccc; margin-top:10px;'>目前正在進行總結算</span>";
-document.body.appendChild(lockOverlay);
-
+// 自動更新勝負下拉選單
 function updateWinnerSelect() {
-    const a = document.getElementById('teamASelect').value;
-    const b = document.getElementById('teamBSelect').value;
+    const a = document.getElementById('teamASelect').value, b = document.getElementById('teamBSelect').value;
     document.getElementById('winnerSelect').innerHTML = `<option value="${a}">${a}</option><option value="${b}">${b}</option>`;
 }
-
 document.getElementById('teamASelect').addEventListener('change', updateWinnerSelect);
 document.getElementById('teamBSelect').addEventListener('change', updateWinnerSelect);
+
+// 賽程連動：當輪次改變，自動填入隊伍
+document.getElementById('roundSelect').addEventListener('change', (e) => {
+    const round = e.target.value;
+    if(sysSettings.schedule && sysSettings.schedule[round] && sysSettings.schedule[round][currentStation]) {
+        const match = sysSettings.schedule[round][currentStation];
+        document.getElementById('teamASelect').value = match.a;
+        document.getElementById('teamBSelect').value = match.b;
+        updateWinnerSelect();
+    }
+    sessionLikes = 0; updateLikeBtnUI(); // 換一輪後重置按讚數
+});
+
+function updateLikeBtnUI() {
+    const btn = document.getElementById('instantLikeBtn');
+    const max = sysSettings ? sysSettings.maxLikes : 3;
+    btn.innerHTML = `送出 👍<br><small>(${sessionLikes}/${max})</small>`;
+    btn.disabled = sessionLikes >= max;
+}
 
 onSnapshot(doc(db, "settings_2", "global"), (docSnap) => {
     if (docSnap.exists()) {
         sysSettings = docSnap.data();
-        lockOverlay.style.display = sysSettings.isLocked ? "flex" : "none";
+        document.getElementById('stationDisplay').innerText = `第 ${currentStation} 關 (⚔️ PK對抗)`;
 
+        // 初始化輪次選單
+        const roundSelect = document.getElementById('roundSelect');
+        const currentRound = roundSelect.value; roundSelect.innerHTML = "";
+        const rounds = Object.keys(sysSettings.schedule || {}).sort((a,b) => a-b);
+        rounds.forEach(r => roundSelect.innerHTML += `<option value="${r}">第 ${r} 輪</option>`);
+        if(currentRound) roundSelect.value = currentRound;
+
+        // 初始化隊伍選單
         const tA = document.getElementById('teamASelect'), tB = document.getElementById('teamBSelect');
         const currA = tA.value, currB = tB.value;
         tA.innerHTML = ""; tB.innerHTML = "";
@@ -44,69 +57,45 @@ onSnapshot(doc(db, "settings_2", "global"), (docSnap) => {
             tA.innerHTML += opt; tB.innerHTML += opt;
         }
         if (currA) tA.value = currA; if (currB) tB.value = currB;
-        if (!currA && !currB && sysSettings.numTeams >= 2) { tA.selectedIndex = 0; tB.selectedIndex = 1; }
-
-        currentConf = sysSettings.stationConfigs[currentStation] || { type: 'pk' };
         
-        const badge = document.getElementById('stationDisplay');
-        if (currentConf.type === 'pk') {
-            badge.innerText = `第 ${currentStation} 關 (⚔️ PK對抗)`;
-            badge.className = "station-badge pk";
-            document.getElementById('winnerGroup').style.display = "block";
-        } else {
-            badge.innerText = `第 ${currentStation} 關 (🤝 雙隊合作)`;
-            badge.className = "station-badge coop";
-            document.getElementById('winnerGroup').style.display = "none";
-        }
-        updateWinnerSelect();
+        // 如果目前沒選過，觸發一次賽程帶入
+        if(!currentRound) roundSelect.dispatchEvent(new Event('change'));
+        updateLikeBtnUI();
     }
 });
 
 onSnapshot(collection(db, "record_2"), (snapshot) => {
-    const leaderboardDiv = document.getElementById('stationLeaderboard');
-    leaderboardDiv.innerHTML = ""; 
-    let count = 0;
-
-    snapshot.forEach((d) => {
-        let r = { id: d.id, ...d.data() };
-        if (r.station !== currentStation || r.isNPC) return;
-        count++;
-        
-        let content = r.type === 'pk' ? `<b style="color:#e74c3c;">${r.winner} 勝</b> (vs ${r.loser})` : `<b>${r.teamA} & ${r.teamB}</b> 合作成功`;
-        
-        const item = document.createElement('div');
-        item.className = `record-item ${r.type}`;
-        item.innerHTML = `<span>${content} <br><small style="color:#888;">${r.timestamp||""}</small></span><button class="delete-btn" data-id="${r.id}">刪除 ❌</button>`;
+    const leaderboardDiv = document.getElementById('stationLeaderboard'); leaderboardDiv.innerHTML = ""; 
+    let records = []; snapshot.forEach(d => records.push({id: d.id, ...d.data()}));
+    
+    records.filter(r => r.station === currentStation && !r.isNPC && !r.isLikeOnly).reverse().forEach(r => {
+        const item = document.createElement('div'); item.className = 'record-item';
+        item.innerHTML = `<span><b>${r.winner} 勝</b> (vs ${r.loser}) <br><small style="color:#888;">${r.timestamp||""}</small></span><button class="delete-btn" data-id="${r.id}">刪除</button>`;
         leaderboardDiv.appendChild(item);
     });
-
-    if (count === 0) leaderboardDiv.innerHTML = "<p style='color: #888;'>目前尚無成績</p>";
-
     document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', async (e) => {
         if(confirm("確定要刪除這筆成績嗎？")) await deleteDoc(doc(db, "record_2", e.target.getAttribute('data-id')));
     }));
 });
 
+// 送出按讚
+document.getElementById('instantLikeBtn').addEventListener('click', async () => {
+    const teamA = document.getElementById('teamASelect').value; // 這邊建議問一下要給誰，或是直接預設隊伍A，這邊我讓它跳窗問
+    const target = confirm(`點擊「確定」給 ${teamA} 讚，點擊「取消」給另一隊讚？`) ? teamA : document.getElementById('teamBSelect').value;
+    
+    await addDoc(collection(db, "record_2"), { station: currentStation, team: target, likes: 1, isLikeOnly: true, timestamp: "👍讚賞" });
+    sessionLikes++; updateLikeBtnUI();
+});
+
+// 送出成績
 document.getElementById('submitBtn').addEventListener('click', async () => {
-    const teamA = document.getElementById('teamASelect').value;
-    const teamB = document.getElementById('teamBSelect').value;
-
-    if (teamA === teamB) return alert("❌ 隊伍A和隊伍B不能選一樣的！");
-
-    const now = new Date();
-    const nowTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-    
-    let recordData = { station: currentStation, teamA: teamA, teamB: teamB, type: currentConf.type, timestamp: nowTime };
-    
-    if (currentConf.type === 'pk') {
-        let winner = document.getElementById('winnerSelect').value;
-        recordData.winner = winner;
-        recordData.loser = (winner === teamA) ? teamB : teamA;
-    }
+    const teamA = document.getElementById('teamASelect').value, teamB = document.getElementById('teamBSelect').value;
+    if (teamA === teamB) return alert("❌ 不能選兩支一樣的隊伍！");
+    const winner = document.getElementById('winnerSelect').value;
+    const now = new Date(), nowTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 
     try {
-        document.getElementById('submitBtn').innerText = "傳送中...";
-        await addDoc(collection(db, "record_2"), recordData);
-        document.getElementById('submitBtn').innerText = "送出成績 🚀";
-    } catch (error) { alert("發生錯誤，請檢查網路！"); document.getElementById('submitBtn').innerText = "送出成績 🚀"; }
+        await addDoc(collection(db, "record_2"), { station: currentStation, teamA, teamB, winner, loser: (winner === teamA ? teamB : teamA), timestamp: nowTime });
+        alert("✅ 戰績送出成功！");
+    } catch (error) { alert("發生錯誤！"); }
 });
