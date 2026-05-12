@@ -48,8 +48,12 @@
     <div class="modal-overlay" id="scheduleModal">
         <div class="modal-content">
             <h2>📅 匯入 Excel 賽程表</h2>
-            <p style="color:#aaa; font-size:0.9em;">請從 Excel 複製後直接貼上。欄位順序必須是：<br><b style="color:#f1c40f;">輪次(數字) | 關卡(數字) | 隊伍A名稱 | 隊伍B名稱</b></p>
-            <textarea id="scheduleInput" placeholder="例如：&#10;1&#9;1&#9;第1隊&#9;第2隊&#10;1&#9;2&#9;第3隊&#9;第4隊"></textarea>
+            <p style="color:#aaa; font-size:0.9em; line-height: 1.4;">
+                <b style="color:#f1c40f;">支援直接從 Excel 複製貼上！</b><br>
+                格式：每輪佔兩列，第一列是「第X輪」開頭接著隊伍A，第二列是隊伍B。<br>
+                (只要全是數字，系統會自動幫你加上「第X隊」)
+            </p>
+            <textarea id="scheduleInput" placeholder="直接從 Excel 貼上你的排班表..."></textarea>
             <div class="modal-btns">
                 <button class="btn btn-add" style="flex:1;" id="saveScheduleBtn">💾 解析並儲存賽程</button>
                 <button class="btn btn-danger" style="flex:1;" id="closeScheduleBtn">取消</button>

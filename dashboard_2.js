@@ -35,28 +35,62 @@ onSnapshot(collection(db, "record_2"), (snapshot) => {
     }));
 });
 
-// 📅 匯入賽程表 (解析 Excel Tab 分隔)
-document.getElementById('openScheduleBtn').addEventListener('click', () => { document.getElementById('scheduleModal').style.display = 'flex'; });
-document.getElementById('closeScheduleBtn').addEventListener('click', () => { document.getElementById('scheduleModal').style.display = 'none'; });
+// 📅 匯入賽程表 (支援直式與 Excel 矩陣直接貼上)
 document.getElementById('saveScheduleBtn').addEventListener('click', async () => {
     let text = document.getElementById('scheduleInput').value.trim();
-    let lines = text.split('\n');
+    let lines = text.split('\n').map(l => l.trimEnd());
     let newSchedule = {}; 
     
-    lines.forEach(line => {
-        let cols = line.split('\t'); 
-        if(cols.length >= 4) {
-            let round = parseInt(cols[0]), station = parseInt(cols[1]);
-            let teamA = cols[2].trim(), teamB = cols[3].trim();
-            if(!isNaN(round) && !isNaN(station)) {
-                if(!newSchedule[round]) newSchedule[round] = {};
-                newSchedule[round][station] = { a: teamA, b: teamB };
+    // 自動判斷是否為 Excel 矩陣格式 (只要有一行開頭是 "第X輪" 就當作矩陣)
+    let isMatrix = lines.some(l => l.startsWith('第') && l.includes('輪'));
+
+    if (isMatrix) {
+        // 🌟 智慧解析：Excel 矩陣排法
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i];
+            if (line.startsWith('第') && line.includes('輪')) {
+                let roundStr = line.split('\t')[0].match(/\d+/);
+                if (!roundStr) continue;
+                let round = parseInt(roundStr[0]);
+
+                let teamA_cols = line.split('\t');
+                let teamB_cols = (lines[i+1] || "").split('\t'); // 抓下一行當隊伍B
+
+                newSchedule[round] = {};
+                
+                // 從第 1 欄開始抓 (避開第 0 欄的"第X輪")
+                for (let col = 1; col < teamA_cols.length; col++) {
+                    let valA = teamA_cols[col].trim();
+                    let valB = (teamB_cols[col] || "").trim();
+
+                    if (valA && valB) {
+                        // 如果只有輸入數字(如 18)，自動變成 "第18隊"
+                        let tA = /^\d+$/.test(valA) ? `第${valA}隊` : valA;
+                        let tB = /^\d+$/.test(valB) ? `第${valB}隊` : valB;
+                        newSchedule[round][col] = { a: tA, b: tB };
+                    }
+                }
             }
         }
-    });
+    } else {
+        // 舊版直式解析 (防呆備用)
+        lines.forEach(line => {
+            let cols = line.split('\t'); 
+            if(cols.length >= 4) {
+                let round = parseInt(cols[0]), station = parseInt(cols[1]);
+                let teamA = cols[2].trim(), teamB = cols[3].trim();
+                teamA = /^\d+$/.test(teamA) ? `第${teamA}隊` : teamA;
+                teamB = /^\d+$/.test(teamB) ? `第${teamB}隊` : teamB;
+                if(!isNaN(round) && !isNaN(station)) {
+                    if(!newSchedule[round]) newSchedule[round] = {};
+                    newSchedule[round][station] = { a: teamA, b: teamB };
+                }
+            }
+        });
+    }
 
     await setDoc(doc(db, "settings_2", "global"), { schedule: newSchedule }, { merge: true });
-    alert("✅ 賽程表匯入成功！");
+    alert("✅ 賽程表匯入成功！系統已自動對應各關卡！");
     document.getElementById('scheduleModal').style.display = 'none';
 });
 
