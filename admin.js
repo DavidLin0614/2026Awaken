@@ -5,6 +5,11 @@ const firebaseConfig = { apiKey: "AIzaSyBo5iMRonG0rFu6ZuIBJFXzwnWF9xiAKgQ", auth
 const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 const urlParams = new URLSearchParams(window.location.search); const currentStation = parseInt(urlParams.get('station')) || 1; 
 
+const lockOverlay = document.createElement('div');
+lockOverlay.style = "display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); color:white; z-index:9999; flex-direction:column; justify-content:center; align-items:center; font-size:2em; font-weight:bold; text-align:center; backdrop-filter:blur(10px);";
+lockOverlay.innerHTML = "🔒<br>關卡已關閉輸入<br><span style='font-size:0.5em; color:#ccc; margin-top:10px;'>目前正在進行總結算</span>";
+document.body.appendChild(lockOverlay);
+
 let sysSettings = null, currentConf = null, isOccupied = false, sessionLikes = 0;
 function getVal(r) { return r.recordValue !== undefined ? r.recordValue : r.time_seconds; }
 
@@ -53,6 +58,10 @@ document.getElementById('instantLikeBtn').addEventListener('click', async () => 
 onSnapshot(doc(db, "settings", "global"), (docSnap) => {
     if (docSnap.exists()) {
         sysSettings = docSnap.data();
+
+        // 🌟 核心：根據資料庫的 isLocked 狀態切換顯示
+        lockOverlay.style.display = sysSettings.isLocked ? "flex" : "none";
+        
         isOccupied = (sysSettings.stationStatus && sysSettings.stationStatus[currentStation] === 'red');
         if(isOccupied) {
             statusBtn.className = "status-btn status-red"; statusBtn.innerText = "🔴 闖關中 (點擊切換為空關)";

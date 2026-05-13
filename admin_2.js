@@ -6,6 +6,12 @@ const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 const urlParams = new URLSearchParams(window.location.search);
 const currentStation = parseInt(urlParams.get('station')) || 1; 
 
+// 1. 在檔案最上方 (initializeApp 下方) 建立遮罩
+const lockOverlay = document.createElement('div');
+lockOverlay.style = "display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); color:white; z-index:9999; flex-direction:column; justify-content:center; align-items:center; font-size:2em; font-weight:bold; text-align:center; backdrop-filter:blur(10px);";
+lockOverlay.innerHTML = "🔒<br>戰績輸入已關閉<br><span style='font-size:0.5em; color:#ccc; margin-top:10px;'>目前正在進行總結算</span>";
+document.body.appendChild(lockOverlay);
+
 let sysSettings = null, sessionLikes = 0, lastSeenRound = 0;
 
 function updateWinnerSelect() {
@@ -39,6 +45,10 @@ document.getElementById('likeBtnB').addEventListener('click', () => sendLike(doc
 onSnapshot(doc(db, "settings_2", "global"), (docSnap) => {
     if (docSnap.exists()) {
         sysSettings = docSnap.data();
+        
+        // 🌟 核心：根據資料庫的 isLocked 狀態切換顯示
+        lockOverlay.style.display = sysSettings.isLocked ? "flex" : "none";
+
         document.getElementById('stationDisplay').innerText = `第 ${currentStation} 關 (⚔️ PK對抗)`;
 
         let round = sysSettings.currentRound || 1;
