@@ -40,6 +40,8 @@
         <button class="btn btn-add" id="openAddRecordBtn">➕ 手動新增戰績</button>
         <button class="btn btn-toggle" id="lockSystemBtn">🔒 關閉輸入<br>(讀取中)</button>
         <button class="btn btn-danger" id="clearAllBtn">💣 一鍵清空</button>
+        <button class="btn btn-base" id="openTeamScoresBtn">📝 各隊起始總分</button>
+        <button class="btn btn-toggle-screen" id="hideScreenBtn" style="background: #8e44ad; color: white;">🙈 隱藏大螢幕<br>(讀取中)</button>
     </div>
 
     <!-- 在原有的 control-panel 下方加上這個新的控制條 -->
@@ -122,5 +124,19 @@
     </div>
 
     <script type="module" src="dashboard_2.js"></script>
+
+    <!-- 在檔案最下方 </body> 之前，補上起始總分的 Modal -->
+    <!-- 📝 各隊起始總分 Modal -->
+    <div class="modal-overlay" id="teamScoresModal">
+        <div class="modal-content">
+            <h2>📝 設定各隊起始總分</h2>
+            <p style="font-size:0.9em; color:#ccc;">(設定的總分會與戰績排名分、讚數合併結算)</p>
+            <div id="teamScoresContainer" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+            <div class="modal-btns">
+                <button class="btn btn-base" style="flex:1;" id="saveTeamScoresBtn">💾 儲存總分</button>
+                <button class="btn btn-danger" style="flex:1;" id="closeTeamScoresBtn">取消</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

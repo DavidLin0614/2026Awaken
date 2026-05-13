@@ -18,6 +18,10 @@ onSnapshot(doc(db, "settings_2", "global"), (docSnap) => {
     document.getElementById('globalRoundDisplay').innerText = `📅 目前：第 ${currentGlobalRound} 輪`;
     // 👆 新增結束
 
+    // 更新隱藏螢幕按鈕文字與顏色
+    document.getElementById('hideScreenBtn').innerText = sysSettings.hideMain ? "📺 恢復大螢幕\n(目前：隱藏中)" : "🙈 隱藏大螢幕\n(目前：正常顯示)";
+    document.getElementById('hideScreenBtn').style.background = sysSettings.hideMain ? "#27ae60" : "#8e44ad";
+
     document.getElementById('lockSystemBtn').innerText = sysSettings.isLocked ? "🔓 開放輸入\n(目前：鎖定中)" : "🔒 關閉輸入\n(目前：開放中)";
     document.getElementById('lockSystemBtn').style.background = sysSettings.isLocked ? "#27ae60" : "#e74c3c";
 });
@@ -197,7 +201,9 @@ document.getElementById('calcScoreBtn').addEventListener('click', () => {
         
         let basePoints = (sysSettings.rankScores && sysSettings.rankScores[item.rank]) ? sysSettings.rankScores[item.rank] : 0;
         let likePoints = item.likes * (sysSettings.likePoints || 0);
-        let finalScore = basePoints + likePoints + item.npcBonus;
+        let startBonus = (sysSettings.teamBaseScores && sysSettings.teamBaseScores[item.team]) ? sysSettings.teamBaseScores[item.team] : 0;
+    
+        let finalScore = basePoints + likePoints + item.npcBonus + startBonus; // 🌟 加上起始分
         
         return { ...item, basePoints, finalScore };
     });
@@ -257,4 +263,28 @@ document.getElementById('exportBtn').addEventListener('click', () => {
     });
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "D3_流水帳紀錄.csv"; link.click();
+});
+
+// 🌟 2. 加入隱藏大螢幕按鈕點擊事件 (放在檔案底部)
+document.getElementById('hideScreenBtn').addEventListener('click', async () => {
+    await setDoc(doc(db, "settings_2", "global"), { hideMain: !sysSettings.hideMain }, { merge: true });
+});
+
+// 🌟 3. 各隊起始總分面板邏輯 (放在檔案底部)
+document.getElementById('openTeamScoresBtn').addEventListener('click', () => {
+    let container = document.getElementById('teamScoresContainer');
+    container.innerHTML = "";
+    for(let i=1; i<=sysSettings.numTeams; i++) {
+        let tName = `第${i}隊`;
+        let score = sysSettings.teamBaseScores ? (sysSettings.teamBaseScores[tName] || 0) : 0;
+        container.innerHTML += `<div class="form-group" style="margin-bottom:5px;"><label>${tName}</label><input type="number" id="base_score_${i}" value="${score}"></div>`;
+    }
+    document.getElementById('teamScoresModal').style.display = 'flex';
+});
+document.getElementById('closeTeamScoresBtn').addEventListener('click', () => document.getElementById('teamScoresModal').style.display = 'none');
+document.getElementById('saveTeamScoresBtn').addEventListener('click', async () => {
+    let newScores = {};
+    for(let i=1; i<=sysSettings.numTeams; i++) newScores[`第${i}隊`] = parseInt(document.getElementById(`base_score_${i}`).value) || 0;
+    await setDoc(doc(db, "settings_2", "global"), { teamBaseScores: newScores }, { merge: true });
+    document.getElementById('teamScoresModal').style.display = 'none';
 });
