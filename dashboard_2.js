@@ -7,10 +7,29 @@ const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 let globalRecords =[];
 let sysSettings = { numTeams: 15, numStations: 10, maxLikes: 3, likePoints: 10, rankScores: {}, schedule: {}, stationStatus: {}, isLocked: false };
 
+let currentGlobalRound = 1;
+
+// 找到原本的 onSnapshot(doc(db, "settings_2", "global"), ... 裡面，加上這兩行：
 onSnapshot(doc(db, "settings_2", "global"), (docSnap) => {
     if (docSnap.exists()) sysSettings = { ...sysSettings, ...docSnap.data() };
+    
+    // 👇 新增這兩行來同步畫面
+    currentGlobalRound = sysSettings.currentRound || 1;
+    document.getElementById('globalRoundDisplay').innerText = `📅 目前：第 ${currentGlobalRound} 輪`;
+    // 👆 新增結束
+
     document.getElementById('lockSystemBtn').innerText = sysSettings.isLocked ? "🔓 開放輸入\n(目前：鎖定中)" : "🔒 關閉輸入\n(目前：開放中)";
     document.getElementById('lockSystemBtn').style.background = sysSettings.isLocked ? "#27ae60" : "#e74c3c";
+});
+
+// 👇 在程式碼底部任意空白處，加上按鈕的點擊功能：
+document.getElementById('prevRoundBtn').addEventListener('click', async () => {
+    if (currentGlobalRound > 1) {
+        await setDoc(doc(db, "settings_2", "global"), { currentRound: currentGlobalRound - 1 }, { merge: true });
+    }
+});
+document.getElementById('nextRoundBtn').addEventListener('click', async () => {
+    await setDoc(doc(db, "settings_2", "global"), { currentRound: currentGlobalRound + 1 }, { merge: true });
 });
 
 onSnapshot(collection(db, "record_2"), (snapshot) => {

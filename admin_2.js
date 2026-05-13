@@ -16,18 +16,6 @@ function updateWinnerSelect() {
 document.getElementById('teamASelect').addEventListener('change', updateWinnerSelect);
 document.getElementById('teamBSelect').addEventListener('change', updateWinnerSelect);
 
-document.getElementById('roundSelect').addEventListener('change', (e) => {
-    const round = e.target.value;
-    if(sysSettings.schedule && sysSettings.schedule[round] && sysSettings.schedule[round][currentStation]) {
-        const match = sysSettings.schedule[round][currentStation];
-        document.getElementById('teamASelect').value = match.a;
-        document.getElementById('teamBSelect').value = match.b;
-        updateWinnerSelect();
-    }
-    sessionLikes = 0; // 換輪次重置讚數
-    updateLikeUI();
-});
-
 // 🌟 更新兩個正方形按讚按鈕的狀態
 function updateLikeUI() {
     const max = sysSettings ? (sysSettings.maxLikes || 3) : 3;
@@ -59,28 +47,40 @@ async function sendLike(team) {
 document.getElementById('likeBtnA').addEventListener('click', () => { sendLike(document.getElementById('teamASelect').value); });
 document.getElementById('likeBtnB').addEventListener('click', () => { sendLike(document.getElementById('teamBSelect').value); });
 
+let lastSeenRound = 0; // 紀錄目前畫面的輪次，避免重複觸發
+
 onSnapshot(doc(db, "settings_2", "global"), (docSnap) => {
     if (docSnap.exists()) {
         sysSettings = docSnap.data();
         document.getElementById('stationDisplay').innerText = `第 ${currentStation} 關 (⚔️ PK對抗)`;
 
-        const roundSelect = document.getElementById('roundSelect');
-        const currentRound = roundSelect.value; roundSelect.innerHTML = "";
-        const rounds = Object.keys(sysSettings.schedule || {}).sort((a,b) => a-b);
-        rounds.forEach(r => roundSelect.innerHTML += `<option value="${r}">第 ${r} 輪</option>`);
-        if(currentRound) roundSelect.value = currentRound;
+        // 🌟 1. 取得總控台設定的目前輪次
+        let round = sysSettings.currentRound || 1;
+        document.getElementById('roundDisplay').innerText = `📅 目前進行：第 ${round} 輪`;
 
+        // 🌟 2. 確保隊伍選單有選項
         const tA = document.getElementById('teamASelect'), tB = document.getElementById('teamBSelect');
-        const currA = tA.value, currB = tB.value;
-        tA.innerHTML = ""; tB.innerHTML = "";
-        for (let i = 1; i <= sysSettings.numTeams; i++) {
-            let opt = `<option value="第${i}隊">第 ${i} 隊</option>`;
-            tA.innerHTML += opt; tB.innerHTML += opt;
+        if (tA.options.length === 0) {
+            for (let i = 1; i <= sysSettings.numTeams; i++) {
+                let opt = `<option value="第${i}隊">第 ${i} 隊</option>`;
+                tA.innerHTML += opt; tB.innerHTML += opt;
+            }
         }
-        if (currA) tA.value = currA; if (currB) tB.value = currB;
-        
-        if(!currentRound) roundSelect.dispatchEvent(new Event('change'));
-        updateLikeUI();
+
+        // 🌟 3. 如果輪次真的有切換，才自動帶入賽程表並重置按讚
+        if (lastSeenRound !== round) {
+            lastSeenRound = round;
+            sessionLikes = 0; // 換輪次，讚數歸零
+            
+            // 自動帶入賽程隊伍
+            if(sysSettings.schedule && sysSettings.schedule[round] && sysSettings.schedule[round][currentStation]) {
+                const match = sysSettings.schedule[round][currentStation];
+                tA.value = match.a;
+                tB.value = match.b;
+            }
+            updateWinnerSelect(); // 更新獲勝方選項
+            updateLikeUI();       // 更新按讚按鈕狀態
+        }
     }
 });
 

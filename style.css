@@ -32,13 +32,13 @@ h1 { text-align: center; font-size: 2.2em; margin-top: 10px; }
 ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 215, 0, 0.5); border-radius: 10px; }
 
-/* 🌟 全新質感微透金框風格 (適用 D2 卡片) */
+/* 🌟 全新質感：深邃毛玻璃 + 纖細白框 */
 .station-card {
-    background-color: rgba(0, 0, 0, 0.65); /* 底色變淺、微透 */
+    background-color: rgba(15, 20, 30, 0.85); /* 非常深的藏青黑，幾乎不透，壓住背景火光 */
     padding: 10px;
     border-radius: 12px; 
-    border: 2px solid #f1c40f; /* 加回亮眼的金色邊框 */
-    box-shadow: 0 8px 16px rgba(0,0,0,0.5); 
+    border: 1px solid rgba(255, 255, 255, 0.15); /* 極細的半透明白框，低調奢華 */
+    box-shadow: 0 8px 16px rgba(0,0,0,0.6); 
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -47,23 +47,23 @@ h1 { text-align: center; font-size: 2.2em; margin-top: 10px; }
     width: 100%;
     position: relative;
     min-width: 0; 
-    backdrop-filter: blur(6px); /* 加強毛玻璃效果，讓背景圖不干擾文字 */
+    backdrop-filter: blur(8px); /* 加強模糊效果 */
 }
 
 /* 🌟 D3 排行榜的列樣式 */
 .leaderboard-row { 
-    background: rgba(0, 0, 0, 0.65); /* 底色變淺、微透 */
-    border: 2px solid #f1c40f; /* 加回亮眼的金色邊框 */
+    background: rgba(15, 20, 30, 0.85); /* 非常深的藏青黑 */
+    border: 1px solid rgba(255, 255, 255, 0.15); /* 極細的半透明白框 */
     border-radius: 10px; 
     display: flex; justify-content: space-between; align-items: center; 
     padding: 15px 25px; font-size: 1.5em; font-weight: bold; 
-    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-    backdrop-filter: blur(6px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
 }
 
 /* 關卡標題也改成質感白/亮橘色搭配 */
-.station-title { font-size: 1.3em; font-weight: bold; color: #ffffff; text-shadow: 0 0 5px rgba(255,255,255,0.5); margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;}
-
+/*.station-title { font-size: 1.3em; font-weight: bold; color: #ffffff; text-shadow: 0 0 5px rgba(255,255,255,0.5); margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;}
+*/
 .station-card p, .record-list li {
     white-space: nowrap; 
     overflow: hidden;    

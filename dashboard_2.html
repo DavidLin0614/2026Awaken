@@ -42,6 +42,13 @@
         <button class="btn btn-danger" id="clearAllBtn">💣 一鍵清空</button>
     </div>
 
+    <!-- 在原有的 control-panel 下方加上這個新的控制條 -->
+    <div class="control-panel" style="justify-content: center; align-items: center; margin-top: -10px; background: rgba(0,0,0,0.6);">
+        <button class="btn btn-setting" id="prevRoundBtn" style="flex: 0 1 120px;">◀ 上一輪</button>
+        <h2 id="globalRoundDisplay" style="margin: 0 20px; color: #f1c40f; text-shadow: 1px 1px 2px #000;">📅 目前：第 1 輪</h2>
+        <button class="btn btn-setting" id="nextRoundBtn" style="flex: 0 1 120px;">下一輪 ▶</button>
+    </div>
+
     <div class="grid-container" id="dashboardBoard" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;"></div>
 
     <!-- 📅 匯入賽程表 Modal -->
