@@ -13,12 +13,20 @@
         label { display: block; font-weight: bold; margin-bottom: 5px; color: #444; }
         select { width: 100%; padding: 12px; font-size: 1.1em; border: 2px solid #ddd; border-radius: 5px; box-sizing: border-box; }
         
-        .action-row { display: flex; gap: 10px; margin-top: 20px; }
-        .action-row button { flex: 1; padding: 15px; font-size: 1.2em; border-radius: 5px; cursor: pointer; font-weight: bold; border: none; transition: 0.2s; }
-        
-        .like-btn { background-color: #f1c40f; color: #333; }
-        .like-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
-        .submit { background-color: #4CAF50; color: white; }
+        /* 🌟 並排的隊伍與按讚按鈕 */
+        .team-like-row { display: flex; align-items: flex-end; gap: 10px; margin-bottom: 15px; text-align: left; }
+        .team-like-row > div { flex: 1; }
+        .square-like-btn { 
+            width: 50px; height: 50px; border-radius: 10px; border: none; 
+            background-color: #f1c40f; color: #333; font-size: 1.2em; font-weight: bold; 
+            cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; justify-content: center; align-items: center; line-height: 1.2;
+        }
+        .square-like-btn small { font-size: 0.6em; }
+        .square-like-btn:active { transform: scale(0.9); }
+        .square-like-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+
+        .submit { background-color: #4CAF50; color: white; width: 100%; padding: 15px; font-size: 1.2em; border-radius: 5px; cursor: pointer; font-weight: bold; border: none; margin-top: 10px;}
 
         .record-item { display: flex; justify-content: space-between; background: #eee; padding: 10px; margin-bottom: 8px; border-radius: 5px; align-items: center; text-align: left; border-left: 5px solid #e74c3c; }
         .delete-btn { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.9em; width: auto; margin: 0; }
@@ -28,7 +36,6 @@
     <div class="container" id="mainContainer">
         <div class="station-badge" id="stationDisplay">正在載入關卡...</div>
         
-        <!-- 輪次選擇 (會連動賽程表) -->
         <div class="form-group" style="background:#f1f2f6; padding:10px; border-radius:5px;">
             <label style="color:#2f3542;">📅 目前進行：第幾輪？</label>
             <select id="roundSelect"></select>
@@ -36,25 +43,28 @@
 
         <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ccc;">
 
-        <div class="form-group"><label>🚩 隊伍 A：</label><select id="teamASelect"></select></div>
-        <div class="form-group"><label>🚩 隊伍 B：</label><select id="teamBSelect"></select></div>
+        <!-- 🌟 隊伍 A 選擇與正方形按讚 -->
+        <div class="team-like-row">
+            <div><label>🚩 隊伍 A：</label><select id="teamASelect"></select></div>
+            <button id="likeBtnA" class="square-like-btn" title="給A隊讚">👍<small id="countA">0</small></button>
+        </div>
 
-        <div class="form-group" id="winnerGroup" style="background:#ffeaa7; padding:10px; border-radius:5px;">
+        <!-- 🌟 隊伍 B 選擇與正方形按讚 -->
+        <div class="team-like-row">
+            <div><label>🚩 隊伍 B：</label><select id="teamBSelect"></select></div>
+            <button id="likeBtnB" class="square-like-btn" title="給B隊讚">👍<small id="countB">0</small></button>
+        </div>
+
+        <div class="form-group" id="winnerGroup" style="background:#ffeaa7; padding:10px; border-radius:5px; margin-top:20px;">
             <label style="color:#e74c3c; font-size:1.1em;">🏆 哪一隊獲勝？</label>
             <select id="winnerSelect" style="border-color:#e74c3c; font-weight:bold;"></select>
         </div>
 
-        <div class="action-row">
-            <button id="instantLikeBtn" type="button" class="like-btn">
-                送出 👍<br><small id="likeCountText">(0/3)</small>
-            </button>
-            <button id="submitBtn" class="submit">
-                送出戰績<br>🚀
-            </button>
-        </div>
+        <button id="submitBtn" class="submit">送出對戰勝負 🚀</button>
 
         <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
         <h3 style="margin-top: 0;">📜 本關對戰紀錄</h3>
+        <p style="font-size:0.8em; color:#888; margin-top:-10px;">(按讚紀錄為即時發送，不顯示於此)</p>
         <div id="stationLeaderboard"></div>
     </div>
     <script type="module" src="admin_2.js"></script>

@@ -202,3 +202,19 @@ document.getElementById('clearAllBtn').addEventListener('click', async () => {
         for (let r of globalRecords) await deleteDoc(doc(db, "record_2", r.id)); alert("✅ 清空完畢！");
     }
 });
+
+// 📊 匯出流水帳資料 (CSV)
+document.getElementById('exportBtn').addEventListener('click', () => {
+    let csvContent = "\uFEFF類別,輪次/關卡,隊伍A,隊伍B,獲勝隊伍,失敗隊伍,按讚數,NPC加分,時間\n";
+    globalRecords.forEach(r => {
+        if(r.isNPC) {
+            csvContent += `牧者加分,-,${r.team},-,-,-,-,${r.bonusScore},${r.timestamp||"無"}\n`;
+        } else if (r.isLikeOnly) {
+            csvContent += `關主按讚,第${r.station}關,${r.team},-,-,-,${r.likes},-,${r.timestamp||"無"}\n`;
+        } else {
+            csvContent += `對戰紀錄,第${r.station}關,${r.teamA},${r.teamB},${r.winner},${r.loser},-,-,${r.timestamp||"無"}\n`;
+        }
+    });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "D3_流水帳紀錄.csv"; link.click();
+});
