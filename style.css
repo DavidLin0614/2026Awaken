@@ -32,13 +32,13 @@ h1 { text-align: center; font-size: 2.2em; margin-top: 10px; }
 ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 215, 0, 0.5); border-radius: 10px; }
 
-/* 🌟 全新質感深色卡片風格 */
+/* 🌟 全新質感微透金框風格 (適用 D2 卡片) */
 .station-card {
-    background-color: rgba(10, 15, 25, 0.9); /* 極深的藏青/黑色，確保字體清晰 */
+    background-color: rgba(0, 0, 0, 0.65); /* 底色變淺、微透 */
     padding: 10px;
     border-radius: 12px; 
-    border: 1px solid rgba(255, 255, 255, 0.15); /* 拔掉金黃色，改成低調的半透明白線 */
-    box-shadow: 0 8px 16px rgba(0,0,0,0.5); /* 增加陰影讓卡片浮出來 */
+    border: 2px solid #f1c40f; /* 加回亮眼的金色邊框 */
+    box-shadow: 0 8px 16px rgba(0,0,0,0.5); 
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -47,22 +47,22 @@ h1 { text-align: center; font-size: 2.2em; margin-top: 10px; }
     width: 100%;
     position: relative;
     min-width: 0; 
-    backdrop-filter: blur(4px); /* 背景微微模糊化 */
+    backdrop-filter: blur(6px); /* 加強毛玻璃效果，讓背景圖不干擾文字 */
 }
-
-/* 關卡標題也改成質感白/亮橘色搭配 */
-.station-title { font-size: 1.3em; font-weight: bold; color: #ffffff; text-shadow: 0 0 5px rgba(255,255,255,0.5); margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;}
 
 /* 🌟 D3 排行榜的列樣式 */
 .leaderboard-row { 
-    background: rgba(10, 15, 25, 0.9); /* 與卡片同色系的深底色 */
-    border: 1px solid rgba(255, 255, 255, 0.15); 
+    background: rgba(0, 0, 0, 0.65); /* 底色變淺、微透 */
+    border: 2px solid #f1c40f; /* 加回亮眼的金色邊框 */
     border-radius: 10px; 
     display: flex; justify-content: space-between; align-items: center; 
     padding: 15px 25px; font-size: 1.5em; font-weight: bold; 
     box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(6px);
 }
+
+/* 關卡標題也改成質感白/亮橘色搭配 */
+.station-title { font-size: 1.3em; font-weight: bold; color: #ffffff; text-shadow: 0 0 5px rgba(255,255,255,0.5); margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;}
 
 .station-card p, .record-list li {
     white-space: nowrap; 

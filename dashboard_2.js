@@ -35,7 +35,17 @@ onSnapshot(collection(db, "record_2"), (snapshot) => {
     }));
 });
 
-// 📅 匯入賽程表 (支援直式與 Excel 矩陣直接貼上)
+// ==========================================
+// 📅 匯入賽程表功能區塊 (包含打開、關閉與解析)
+// ==========================================
+document.getElementById('openScheduleBtn').addEventListener('click', () => { 
+    document.getElementById('scheduleModal').style.display = 'flex'; 
+});
+
+document.getElementById('closeScheduleBtn').addEventListener('click', () => { 
+    document.getElementById('scheduleModal').style.display = 'none'; 
+});
+
 document.getElementById('saveScheduleBtn').addEventListener('click', async () => {
     let text = document.getElementById('scheduleInput').value.trim();
     let lines = text.split('\n').map(l => l.trimEnd());
@@ -60,8 +70,8 @@ document.getElementById('saveScheduleBtn').addEventListener('click', async () =>
                 
                 // 從第 1 欄開始抓 (避開第 0 欄的"第X輪")
                 for (let col = 1; col < teamA_cols.length; col++) {
-                    let valA = teamA_cols[col].trim();
-                    let valB = (teamB_cols[col] || "").trim();
+                    let valA = teamA_cols[col] ? teamA_cols[col].trim() : "";
+                    let valB = teamB_cols[col] ? teamB_cols[col].trim() : "";
 
                     if (valA && valB) {
                         // 如果只有輸入數字(如 18)，自動變成 "第18隊"
@@ -93,6 +103,7 @@ document.getElementById('saveScheduleBtn').addEventListener('click', async () =>
     alert("✅ 賽程表匯入成功！系統已自動對應各關卡！");
     document.getElementById('scheduleModal').style.display = 'none';
 });
+// ==========================================
 
 // 🏆 設定名次給分
 document.getElementById('openRankScoresBtn').addEventListener('click', () => {
