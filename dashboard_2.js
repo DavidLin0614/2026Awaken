@@ -160,6 +160,7 @@ document.getElementById('saveSettingsBtn').addEventListener('click', async () =>
 });
 
 // 🏆 結算成績 (算勝負 -> 排名 -> 依名次給分 -> 加讚數/NPC分)
+// 🏆 結算成績 (算勝負 -> 處理並列排名 -> 依名次給分 -> 加讚數/NPC分)
 document.getElementById('calcScoreBtn').addEventListener('click', () => {
     let teamStats = {}; 
     for (let i = 1; i <= sysSettings.numTeams; i++) {
@@ -177,28 +178,37 @@ document.getElementById('calcScoreBtn').addEventListener('click', () => {
         }
     });
 
-    // 依據勝場數排名 (勝多優先，若勝場同則敗場少優先)
+    // 依據勝場數排名 (勝多優先 -> 敗場少優先)
     let ranked = Object.keys(teamStats).map(t => ({ team: t, ...teamStats[t] }));
     ranked.sort((a, b) => {
         if(b.wins !== a.wins) return b.wins - a.wins;
         return a.losses - b.losses; 
     });
 
+    // 賦予並列排名與最終總分
+    let currentRank = 1;
     let finalRanking = ranked.map((item, index) => {
-        let rank = index + 1;
-        let basePoints = sysSettings.rankScores[rank] || 0;
+        if (index > 0 && item.wins === ranked[index-1].wins && item.losses === ranked[index-1].losses) {
+            item.rank = ranked[index-1].rank;
+        } else {
+            currentRank = index + 1;
+            item.rank = currentRank;
+        }
+        
+        let basePoints = (sysSettings.rankScores && sysSettings.rankScores[item.rank]) ? sysSettings.rankScores[item.rank] : 0;
         let likePoints = item.likes * (sysSettings.likePoints || 0);
         let finalScore = basePoints + likePoints + item.npcBonus;
-        return { rank, ...item, basePoints, finalScore };
+        
+        return { ...item, basePoints, finalScore };
     });
 
-    let csvContent = "\uFEFF勝率排名,隊伍名稱,勝,敗,基礎排名分,獲得讚數,NPC加分,最終總積分\n";
+    let csvContent = "\uFEFF勝敗排名,隊伍名稱,勝,敗,基礎排名分,獲得讚數,NPC加分,最終總積分\n";
     finalRanking.forEach(item => { 
         csvContent += `第${item.rank}名,${item.team},${item.wins},${item.losses},${item.basePoints},${item.likes},${item.npcBonus},${item.finalScore}\n`; 
     });
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "純PK戰績結算表.csv"; link.click();
+    const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "D3_PK戰績結算表.csv"; link.click();
 });
 
 // 手動新增與清空

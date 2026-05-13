@@ -40,23 +40,56 @@ onSnapshot(collection(db, "record_2"), (snapshot) => {
 
 function calculateLiveScores() {
     if (!sysSettings) return;
-    let teamScores = {}; 
-    for (let i = 1; i <= sysSettings.numTeams; i++) teamScores[`第${i}隊`] = sysSettings.teamBaseScores ? (sysSettings.teamBaseScores[`第${i}隊`] || 0) : 0;
+    
+    // 1. 初始化各隊數據
+    let teamStats = {}; 
+    for (let i = 1; i <= sysSettings.numTeams; i++) {
+        teamStats[`第${i}隊`] = { wins: 0, losses: 0, likes: 0, npcBonus: 0 };
+    }
 
+    // 2. 統計即時勝敗、讚數、NPC加分
     allRecords.forEach(r => {
         if (r.isNPC) {
-            if(teamScores[r.team] !== undefined) teamScores[r.team] += r.bonusScore;
-        } else if (r.type === 'pk') {
-            if(teamScores[r.winner] !== undefined) teamScores[r.winner] += sysSettings.scoreRule.pkWin;
-            if(teamScores[r.loser] !== undefined) teamScores[r.loser] += sysSettings.scoreRule.pkLose;
-        } else if (r.type === 'coop') {
-            if(teamScores[r.teamA] !== undefined) teamScores[r.teamA] += sysSettings.scoreRule.coop;
-            if(teamScores[r.teamB] !== undefined) teamScores[r.teamB] += sysSettings.scoreRule.coop;
+            if(teamStats[r.team]) teamStats[r.team].npcBonus += r.bonusScore;
+        } else if (r.isLikeOnly) {
+            if(teamStats[r.team]) teamStats[r.team].likes += r.likes;
+        } else {
+            if(teamStats[r.winner]) teamStats[r.winner].wins += 1;
+            if(teamStats[r.loser]) teamStats[r.loser].losses += 1;
         }
     });
 
-    let ranked = Object.keys(teamScores).map(t => ({ team: t, score: teamScores[t] })).sort((a, b) => b.score - a.score);
-    let tiers = [[], [], [],[]]; let chunkSize = Math.ceil(ranked.length / 4);
+    // 3. 依據勝敗排序 (勝多優先 -> 敗少優先)
+    let ranked = Object.keys(teamStats).map(t => ({ team: t, ...teamStats[t] }));
+    ranked.sort((a, b) => {
+        if(b.wins !== a.wins) return b.wins - a.wins;
+        return a.losses - b.losses; 
+    });
+
+    // 4. 估算即時排名與總分 (處理並列名次)
+    let currentRank = 1;
+    ranked.forEach((item, index) => {
+        // 如果勝敗和上一隊一模一樣，名次並列
+        if (index > 0 && item.wins === ranked[index-1].wins && item.losses === ranked[index-1].losses) {
+            item.rank = ranked[index-1].rank;
+        } else {
+            currentRank = index + 1; // 否則按照真實排序給名次
+            item.rank = currentRank;
+        }
+        
+        // 抓取總控台設定的該名次分數 (若沒設定預設為0)
+        let basePoints = (sysSettings.rankScores && sysSettings.rankScores[item.rank]) ? sysSettings.rankScores[item.rank] : 0;
+        let likePoints = item.likes * (sysSettings.likePoints || 0);
+        
+        // 計算這隊的即時估算總分
+        item.estScore = basePoints + likePoints + item.npcBonus;
+    });
+
+    // 5. 按照估算總分重新排序，並分發到四個表情區塊
+    ranked.sort((a, b) => b.estScore - a.estScore);
+
+    let tiers = [[], [], [],[]]; 
+    let chunkSize = Math.ceil(ranked.length / 4);
     ranked.forEach((item, idx) => tiers[Math.min(Math.floor(idx / chunkSize), 3)].push(item.team));
 
     document.getElementById('tier1').innerText = tiers[0].join(', ') || '無';

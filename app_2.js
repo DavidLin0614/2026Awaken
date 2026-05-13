@@ -26,17 +26,27 @@ function renderLeaderboard() {
         }
     });
 
+    // 排序：勝多優先 -> 敗少優先
     let ranked = Object.keys(teamStats).map(t => ({ team: t, ...teamStats[t] }));
     ranked.sort((a, b) => {
         if(b.wins !== a.wins) return b.wins - a.wins;
-        return a.losses - b.losses; // 勝場相同，敗場少的排前面
+        return a.losses - b.losses; 
     });
 
+    // 處理並列名次的顯示
+    let currentRank = 1;
     ranked.forEach((item, index) => {
-        let rankClass = ""; let rankStr = `${index + 1}`;
-        if(index === 0) { rankClass = "top1"; rankStr = "🥇"; }
-        if(index === 1) { rankClass = "top2"; rankStr = "🥈"; }
-        if(index === 2) { rankClass = "top3"; rankStr = "🥉"; }
+        if (index > 0 && item.wins === ranked[index-1].wins && item.losses === ranked[index-1].losses) {
+            item.rank = ranked[index-1].rank;
+        } else {
+            currentRank = index + 1;
+            item.rank = currentRank;
+        }
+
+        let rankClass = ""; let rankStr = `${item.rank}`;
+        if(item.rank === 1) { rankClass = "top1"; rankStr = "🥇"; }
+        else if(item.rank === 2) { rankClass = "top2"; rankStr = "🥈"; }
+        else if(item.rank === 3) { rankClass = "top3"; rankStr = "🥉"; }
 
         let likeStr = item.likes > 0 ? `👍 x ${item.likes}` : `<span style="color:#555;">👍 x 0</span>`;
 
