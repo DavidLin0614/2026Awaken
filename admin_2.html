@@ -3,68 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>關主專用後台 (PK對戰制)</title>
+    <title>PK 戰績輸入</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        body { font-family: "微軟正黑體", sans-serif; background-color: #f4f4f9; padding: 20px; text-align: center; margin: 0; }
-        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; display: block; }
-        h1 { color: #333; margin-top: 0; }
-        .station-badge { background-color: #e74c3c; color: white; padding: 5px 15px; border-radius: 20px; font-size: 1.2em; font-weight: bold; display: inline-block; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; text-align: left; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; color: #444; }
-        select { width: 100%; padding: 12px; font-size: 1.1em; border: 2px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        
-        /* 🌟 並排的隊伍與按讚按鈕 */
-        .team-like-row { display: flex; align-items: flex-end; gap: 10px; margin-bottom: 15px; text-align: left; }
-        .team-like-row > div { flex: 1; }
-        .square-like-btn { 
-            width: 50px; height: 50px; border-radius: 10px; border: none; 
-            background-color: #f1c40f; color: #333; font-size: 1.2em; font-weight: bold; 
-            cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: flex; flex-direction: column; justify-content: center; align-items: center; line-height: 1.2;
-        }
-        .square-like-btn small { font-size: 0.6em; }
-        .square-like-btn:active { transform: scale(0.9); }
-        .square-like-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
-
-        .submit { background-color: #4CAF50; color: white; width: 100%; padding: 15px; font-size: 1.2em; border-radius: 5px; cursor: pointer; font-weight: bold; border: none; margin-top: 10px;}
-
-        .record-item { display: flex; justify-content: space-between; background: #eee; padding: 10px; margin-bottom: 8px; border-radius: 5px; align-items: center; text-align: left; border-left: 5px solid #e74c3c; }
-        .delete-btn { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.9em; width: auto; margin: 0; }
+        body { font-family: "微軟正黑體", sans-serif; background-color: #f4f4f9; padding: 20px; text-align: center; }
+        .container { background: white; padding: 20px; border-radius: 10px; max-width: 450px; margin: 0 auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .vs-box { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 20px 0; }
+        .vs-text { font-size: 2em; font-weight: bold; color: #e74c3c; }
+        .station-badge { background-color: #e74c3c; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
+        .round-ctrl { background: #f1f2f6; padding: 10px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        select { padding: 10px; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; width: 100%; }
+        .like-btn-sq { width: 45px; height: 45px; background: #f1c40f; border: none; border-radius: 8px; font-size: 1.2em; cursor: pointer; }
+        .submit-btn { background: #27ae60; color: white; border: none; padding: 15px; width: 100%; font-size: 1.2em; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 <body>
-    <div class="container" id="mainContainer">
-        <div class="station-badge" id="stationDisplay">正在載入關卡...</div>
+    <div class="container">
+        <div class="station-badge" id="stationDisplay">載入中...</div>
         
-        <!-- 輪次顯示 (由總控台控制) -->
-        <div class="form-group" style="background:#f1f2f6; padding:15px; border-radius:5px; text-align:center;">
-            <h2 id="roundDisplay" style="color:#2f3542; margin:0;">📅 等待總控台設定...</h2>
+        <div class="round-ctrl">
+            <button onclick="changeRound(-1)">◀</button>
+            <b id="roundText">第 1 輪</b>
+            <button onclick="changeRound(1)">▶</button>
         </div>
 
-        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ccc;">
-
-        <!-- 🌟 隊伍 A 選擇與正方形按讚 -->
-        <div class="team-like-row">
-            <div><label>🚩 隊伍 A：</label><select id="teamASelect"></select></div>
-            <button id="likeBtnA" class="square-like-btn" title="給A隊讚">👍<small id="countA">0</small></button>
+        <div class="vs-box">
+            <div style="flex:1;">
+                <select id="teamASelect"></select>
+                <button class="like-btn-sq" id="likeA">👍<br><small id="lA">0</small></button>
+            </div>
+            <div class="vs-text">VS</div>
+            <div style="flex:1;">
+                <select id="teamBSelect"></select>
+                <button class="like-btn-sq" id="likeB">👍<br><small id="lB">0</small></button>
+            </div>
         </div>
 
-        <!-- 🌟 隊伍 B 選擇與正方形按讚 -->
-        <div class="team-like-row">
-            <div><label>🚩 隊伍 B：</label><select id="teamBSelect"></select></div>
-            <button id="likeBtnB" class="square-like-btn" title="給B隊讚">👍<small id="countB">0</small></button>
+        <div style="background:#ffeaa7; padding:10px; border-radius:8px;">
+            <label>🏆 誰贏了？</label>
+            <select id="winnerSelect"></select>
         </div>
 
-        <div class="form-group" id="winnerGroup" style="background:#ffeaa7; padding:10px; border-radius:5px; margin-top:20px;">
-            <label style="color:#e74c3c; font-size:1.1em;">🏆 哪一隊獲勝？</label>
-            <select id="winnerSelect" style="border-color:#e74c3c; font-weight:bold;"></select>
-        </div>
+        <button class="submit-btn" id="submitBtn">送出對戰戰績 🚀</button>
 
-        <button id="submitBtn" class="submit">送出對戰勝負 🚀</button>
-
-        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
-        <h3 style="margin-top: 0;">📜 本關對戰紀錄</h3>
-        <p style="font-size:0.8em; color:#888; margin-top:-10px;">(按讚紀錄為即時發送，不顯示於此)</p>
+        <hr>
         <div id="stationLeaderboard"></div>
     </div>
     <script type="module" src="admin_2.js"></script>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👑 全能總控台</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .tab-menu { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .tab-btn { padding: 12px 25px; cursor: pointer; background: #34495e; border: none; color: white; border-radius: 5px; font-weight: bold; }
+        .tab-btn.active { background: #f39c12; }
+        .tab-content { display: none; background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; }
+        .tab-content.active { display: block; }
+        
+        .monitor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+        .mini-card { background: #2c3e50; padding: 10px; border-radius: 5px; text-align: center; border-left: 5px solid #ccc; }
+        .mini-card.red { border-left-color: #e74c3c; }
+        .mini-card.green { border-left-color: #27ae60; }
+        
+        .bonus-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; }
+        input[type="number"] { width: 80px; }
+    </style>
+</head>
+<body>
+    <h1>👑 營會全能總控台</h1>
+
+    <div class="tab-menu">
+        <button class="tab-btn active" onclick="openTab('monitor')">📊 即時監控</button>
+        <button class="tab-btn" onclick="openTab('bonus')">✨ 全場加分</button>
+        <button class="tab-btn" onclick="openTab('settings')">⚙️ 系統設定</button>
+    </div>
+
+    <!-- 1. 即時監控分頁 -->
+    <div id="monitor" class="tab-content active">
+        <div style="display:flex; gap:20px;">
+            <div style="flex:1;">
+                <h3 style="color:#2ecc71;">🟢 D2 關卡燈號</h3>
+                <div class="monitor-grid" id="d2Monitor"></div>
+            </div>
+            <div style="flex:1;">
+                <h3 style="color:#e74c3c;">⚔️ D3 關卡輪次</h3>
+                <div class="monitor-grid" id="d3Monitor"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 全場加分分頁 -->
+    <div id="bonus" class="tab-content">
+        <h3>✨ 牧者/手動全場加分</h3>
+        <div id="bonusContainer"></div>
+    </div>
+
+    <!-- 3. 系統設定分頁 -->
+    <div id="settings" class="tab-content">
+        <div class="control-panel" style="background:none;">
+            <button class="btn btn-toggle" id="lockBtn">🔒 鎖定系統</button>
+            <button class="btn btn-toggle-screen" id="hideBtn">🙈 隱藏大螢幕</button>
+            <button class="btn btn-schedule" onclick="window.location.href='dashboard_2.html'">📅 前往 D3 賽程匯入</button>
+        </div>
+        <hr>
+        <h3>🛠️ 全域參數調整</h3>
+        <div class="form-row">
+            <div class="form-group"><label>D2 一個讚幾分</label><input type="number" id="set_like2"></div>
+            <div class="form-group"><label>D3 一個讚幾分</label><input type="number" id="set_like3"></div>
+        </div>
+        <button class="btn btn-export" id="saveGlobalBtn">💾 儲存全域設定</button>
+    </div>
+
+    <script type="module" src="super_dashboard.js"></script>
+    <script>
+        function openTab(id) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById(id).classList.add('active');
+        }
+    </script>
+</body>
+</html>
