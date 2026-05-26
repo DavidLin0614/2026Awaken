@@ -40,35 +40,62 @@ onSnapshot(collection(db, "records_bonus"), (snapshot) => {
 // ==========================================
 // 🎨 渲染監控畫面
 // ==========================================
+// 渲染 D2
 function renderD2Monitor() {
     const container = document.getElementById('d2_monitor'); container.innerHTML = "";
     for(let i=1; i<=sysSettings.numStations_d2; i++) {
         let status = (sysSettings.d2_status && sysSettings.d2_status[i]) || 'green';
-        let recs = recordsD2.filter(r => r.station === i && !r.isLikeOnly).sort((a,b) => b.createdAt - a.createdAt);
-        let listHTML = recs.slice(0,3).map(r => `<li><span>${r.team}</span><span>${r.val}</span><button class="del-btn" onclick="window.delD2('${r.id}')">刪</button></li>`).join('');
+        let recs = recordsD2.filter(r => r.station === i && !r.isLikeOnly);
         
+        let conf = sysSettings.d2_configs ? sysSettings.d2_configs[i] : { type:'time' };
+        recs.sort((a,b) => conf.type === 'time' ? a.val - b.val : b.val - a.val); // 依成績排序
+
+        let top3 = recs.slice(0,3).map((r, idx) => `<li><span>${['🥇','🥈','🥉'][idx]} ${r.team}</span><span>${r.val}</span><button class="del-btn" onclick="window.delD2('${r.id}')">刪</button></li>`).join('');
+        let others = recs.slice(3).map(r => `<li><span>${r.team}</span><span>${r.val}</span><button class="del-btn" onclick="window.delD2('${r.id}')">刪</button></li>`).join('');
+        let detailHtml = others ? `<details><summary>其他名次 ▼</summary><ul class="record-list">${others}</ul></details>` : '';
+
         container.innerHTML += `
             <div class="glass-card station-box">
                 <div class="station-title"><span class="status-dot ${status === 'red' ? 'dot-red' : 'dot-green'}"></span>第 ${i} 關</div>
-                <ul class="record-list">${listHTML || '<li style="color:#aaa;">尚無成績</li>'}</ul>
-                <div style="font-size:0.8em; color:#aaa; margin-top:5px;">共 ${recs.length} 筆紀錄</div>
+                <ul class="record-list">${top3 || '<li style="color:#aaa;">尚無成績</li>'}</ul>
+                ${detailHtml}
             </div>`;
     }
 }
 
+// 渲染 D3
 function renderD3Monitor() {
     const container = document.getElementById('d3_monitor'); container.innerHTML = "";
     for(let i=1; i<=sysSettings.numStations_d3; i++) {
         let status = (sysSettings.d3_status && sysSettings.d3_status[i]) || 'green';
         let recs = recordsD3.filter(r => r.station === i).sort((a,b) => b.createdAt - a.createdAt);
-        let latestRound = recs.length > 0 ? recs[0].round : 1;
-        let listHTML = recs.slice(0,3).map(r => `<li><span>[輪${r.round}] ${r.winner} 勝</span><button class="del-btn" onclick="window.delD3('${r.id}')">刪</button></li>`).join('');
+        let currentTeams = "尚未分配";
         
+        // 抓取各關目前應該出現的隊伍 (找全場最高輪次)
+        let maxRound = 1;
+        recordsD3.forEach(r => { if(r.round > maxRound) maxRound = r.round; });
+        if(sysSettings.schedule && sysSettings.schedule[maxRound] && sysSettings.schedule[maxRound][i]) {
+            currentTeams = `${sysSettings.schedule[maxRound][i].a} VS ${sysSettings.schedule[maxRound][i].b}`;
+        }
+
+        let listHTML = recs.slice(0,3).map(r => `
+            <li style="flex-direction:column; align-items:flex-start;">
+                <div style="width:100%; display:flex; justify-content:space-between;">
+                    <span style="font-size:0.9em;">[輪${r.round}] ${r.teamA} VS ${r.teamB}</span>
+                    <button class="del-btn" onclick="window.delD3('${r.id}')">刪</button>
+                </div>
+                <div style="color:#e74c3c; font-weight:bold;">👉 ${r.winner} (勝)</div>
+            </li>`).join('');
+        
+        let others = recs.slice(3).map(r => `<li><span>[輪${r.round}] ${r.winner}(勝)</span><button class="del-btn" onclick="window.delD3('${r.id}')">刪</button></li>`).join('');
+        let detailHtml = others ? `<details><summary>更早紀錄 ▼</summary><ul class="record-list">${others}</ul></details>` : '';
+
         container.innerHTML += `
             <div class="glass-card station-box">
                 <div class="station-title"><span class="status-dot ${status === 'red' ? 'dot-red' : 'dot-green'}"></span>第 ${i} 關</div>
-                <div style="color:#f1c40f; margin-bottom:10px;">目前進度：第 ${latestRound} 輪</div>
+                <div style="color:#f1c40f; margin-bottom:5px; font-size:0.8em;">當前: ${currentTeams}</div>
                 <ul class="record-list">${listHTML || '<li style="color:#aaa;">尚無成績</li>'}</ul>
+                ${detailHtml}
             </div>`;
     }
 }
@@ -250,4 +277,15 @@ document.getElementById('save_d3_schedule').addEventListener('click', async () =
     await setDoc(doc(db, "settings_global", "global"), { schedule: newSchedule }, { merge: true });
     alert("✅ 賽程表匯入成功！");
     document.getElementById('modal_d3_schedule').style.display = 'none';
+});
+
+document.getElementById('d2_exportBtn').addEventListener('click', () => {
+    let csv = "\uFEFF類別,關卡,隊伍,數值,按讚數,時間\n";
+    recordsD2.forEach(r => csv += `${r.isLikeOnly?'關主按讚':'闖關紀錄'},第${r.station}關,${r.team},${r.val||'-'},${r.likes||0},${new Date(r.createdAt).toLocaleString()}\n`);
+    const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = "D2_紀錄.csv"; link.click();
+});
+document.getElementById('d3_exportBtn').addEventListener('click', () => {
+    let csv = "\uFEFF類別,輪次,關卡,隊伍A,隊伍B,獲勝隊伍,A讚,B讚,時間\n";
+    recordsD3.forEach(r => csv += `對戰紀錄,第${r.round}輪,第${r.station}關,${r.teamA},${r.teamB},${r.winner},${r.likesA||0},${r.likesB||0},${new Date(r.createdAt).toLocaleString()}\n`);
+    const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = "D3_紀錄.csv"; link.click();
 });

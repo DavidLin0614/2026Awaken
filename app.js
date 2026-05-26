@@ -4,95 +4,79 @@ import { getFirestore, collection, onSnapshot, doc } from "https://www.gstatic.c
 const firebaseConfig = { apiKey: "AIzaSyBo5iMRonG0rFu6ZuIBJFXzwnWF9xiAKgQ", authDomain: "awaken-c5fca.firebaseapp.com", projectId: "awaken-c5fca", storageBucket: "awaken-c5fca.firebasestorage.app" };
 const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
-let globalRecords =[]; 
-let sysSettings = { numStations: 15, stationConfigs: {}, hideMain: false, maxMin: 59, maxScore: 999, stationStatus: {} };
-
-function formatTime(totalSeconds) { 
-    const m = Math.floor(totalSeconds / 60); 
-    const s = totalSeconds % 60; 
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`; 
-}
-function getVal(r) { return r.recordValue !== undefined ? r.recordValue : r.time_seconds; }
+let globalRecords = []; let sysSettings = { numTeams: 15, numStations_d2: 15, d2_hidden: false, d2_status: {}, d2_configs: {} };
 
 const hideOverlay = document.createElement('div');
-hideOverlay.id = "hideOverlay"; 
-hideOverlay.innerHTML = "🏆<br>營會成績結算中<br><span>敬請期待最高榮耀</span>";
+hideOverlay.id = "hideOverlay"; hideOverlay.innerHTML = "🏆<br>營會成績結算中<br><span style='font-size:0.5em;'>敬請期待最高榮耀</span>";
 document.body.appendChild(hideOverlay);
 
+function formatTime(totalSeconds) { const m = Math.floor(totalSeconds / 60); const s = totalSeconds % 60; return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`; }
+
 function renderBoard() {
-    const board = document.getElementById("board"); 
-    board.innerHTML = ""; 
-    
-    // 預設所有隊伍讚數為 0
+    const board = document.getElementById("board"); board.innerHTML = ""; 
     let teamLikes = {}; 
     for(let i=1; i<=sysSettings.numTeams; i++) teamLikes[`第${i}隊`] = 0;
+    globalRecords.forEach(r => { if(!r.isNPC && r.likes > 0) teamLikes[r.team] += r.likes; });
 
-    globalRecords.forEach(r => {
-        if(!r.isNPC && r.likes > 0) { teamLikes[r.team] += r.likes; }
-    });
-
-    for (let i = 1; i <= sysSettings.numStations; i++) {
-        // 🌟 排除掉「純按讚」的紀錄，避免破壞時間成績邏輯
+    let maxStations = sysSettings.numStations_d2 || 15;
+    for (let i = 1; i <= maxStations; i++) {
         let stationRecords = globalRecords.filter(r => r.station === i && !r.isLikeOnly);
-        let conf = sysSettings.stationConfigs[i] || { type: 'time', unit: '' };
+        let conf = sysSettings.d2_configs[i] || { type: 'time', unit: '' };
         let isTime = conf.type === 'time';
-        let maxVal = isTime ? ((sysSettings.maxMin * 60) + 59) : sysSettings.maxScore;
+        let maxVal = isTime ? ((sysSettings.d2_maxMin * 60) + 59) : sysSettings.d2_maxScore;
 
         let teamBest = {};
         stationRecords.forEach(r => {
-            let val = getVal(r);
-            if (val > maxVal || val < 0) return;
+            if (r.val > maxVal || r.val < 0) return;
             if (!teamBest[r.team]) teamBest[r.team] = r;
             else {
-                let currBest = getVal(teamBest[r.team]);
-                if (isTime ? val < currBest : val > currBest) teamBest[r.team] = r;
+                let curr = teamBest[r.team].val;
+                if (isTime ? r.val < curr : r.val > curr) teamBest[r.team] = r;
             }
         });
         
-        let uniqueRecords = Object.values(teamBest).sort((a, b) => isTime ? (getVal(a) - getVal(b)) : (getVal(b) - getVal(a)));
+        let uniqueRecords = Object.values(teamBest).sort((a, b) => isTime ? (a.val - b.val) : (b.val - a.val));
         let topHtml =[];
-        for(let j = 0; j < 3; j++) {
+        for(let j=0; j<3; j++) {
             if(uniqueRecords[j]) {
-                let val = getVal(uniqueRecords[j]);
-                topHtml.push(`${uniqueRecords[j].team} (${isTime ? formatTime(val) : `${val} ${conf.unit}`})`);
+                let display = isTime ? formatTime(uniqueRecords[j].val) : `${uniqueRecords[j].val} ${conf.unit}`;
+                topHtml.push(`${uniqueRecords[j].team} (${display})`);
             } else topHtml.push("尚未產生");
         }
 
-        let statusDot = (sysSettings.stationStatus && sysSettings.stationStatus[i] === 'red') ? '🔴' : '🟢';
+        let status = (sysSettings.d2_status && sysSettings.d2_status[i] === 'red') ? 'dot-red' : 'dot-green';
 
         board.innerHTML += `
             <div class="station-card">
-                <div class="station-title">${statusDot} 第 ${i} 關</div>
+                <div class="station-title">
+                    <span class="status-dot ${status}"></span>
+                    <span>第 ${i} 關</span>
+                    <span></span>
+                </div>
                 <p>🥇 ${topHtml[0]}</p><p>🥈 ${topHtml[1]}</p><p>🥉 ${topHtml[2]}</p>
             </div>
         `;
     }
 
-    // 🌟 產出按讚框框，每 4 隊一個框框，沒有標題
     let teamNames = Object.keys(teamLikes).sort((a, b) => parseInt(a.replace(/[^0-9]/g, '')) - parseInt(b.replace(/[^0-9]/g, '')));
-    let chunkedTeams =[];
+    let chunkedTeams = [];
     for (let i = 0; i < teamNames.length; i += 4) chunkedTeams.push(teamNames.slice(i, i + 4));
 
     chunkedTeams.forEach(chunk => {
-        let likesHtml = chunk.map(t => `<p style="margin: 8px 0; color:#f1c40f; font-weight:bold; text-shadow:1px 1px 2px #000; font-size:1.15em;">${t}：👍 x ${teamLikes[t]}</p>`).join('');
-        board.innerHTML += `
-            <div class="station-card" style="border-color:#f1c40f; justify-content: center;">
-                <div>${likesHtml}</div>
-            </div>
-        `;
+        let likesHtml = chunk.map(t => `<p style="margin: 8px 0; color:#f1c40f; font-weight:bold; font-size:1.15em;">${t}：👍 x ${teamLikes[t]}</p>`).join('');
+        board.innerHTML += `<div class="station-card" style="justify-content: center;"><div>${likesHtml}</div></div>`;
     });
 }
 
 onSnapshot(doc(db, "settings_global", "global"), (docSnap) => {
     if (docSnap.exists()) { 
         sysSettings = { ...sysSettings, ...docSnap.data() }; 
-        if(hideOverlay) hideOverlay.style.display = sysSettings.d2_hidden ? "flex" : "none"; 
+        hideOverlay.style.display = sysSettings.d2_hidden ? "flex" : "none"; 
         renderBoard(); 
     }
 });
 
-onSnapshot(collection(db, "record"), (snapshot) => {
-    globalRecords =[]; 
-    snapshot.forEach((doc) => globalRecords.push(doc.data())); 
-    renderBoard(); 
+// 🌟 改監聽 records_d2
+onSnapshot(collection(db, "records_d2"), (snapshot) => {
+    globalRecords = []; snapshot.forEach((doc) => globalRecords.push(doc.data())); renderBoard(); 
 });

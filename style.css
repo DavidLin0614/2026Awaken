@@ -1,86 +1,63 @@
-/* style.css - 營會系統 2026 終極版樣式 */
-h1 { text-align: center; margin-top: 20px; font-size: 2.5em; text-shadow: 2px 2px 4px #000; }
-body {
-    margin: 0; padding: 10px; font-family: "微軟正黑體", sans-serif;
-    background: url('bg.jpg') center/cover fixed no-repeat #000;
-    color: white; min-height: 100vh;
-}
+body { margin: 0; padding: 10px; font-family: "微軟正黑體", sans-serif; background: url('bg.jpg') center/cover fixed no-repeat #000; color: white; min-height: 100vh; }
 * { box-sizing: border-box; }
+h1 { text-align: center; margin-top: 10px; font-size: 2.5em; text-shadow: 2px 2px 4px #000; margin-bottom: 5px; }
 
-/* --- 共用卡片風格 (微透黑底 + 金邊) --- */
-/* --- 共用卡片風格 (微透黑底無金邊) --- */
+/* --- 玻璃卡片 --- */
 .station-card, .glass-card {
-    background-color: rgba(10, 15, 25, 0.85);
-    padding: 10px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.15); /* 拔掉金框，換成微透白細線 */
-    box-shadow: 0 8px 16px rgba(0,0,0,0.6);
-    text-align: center;
-    display: flex; flex-direction: column; justify-content: center;
-    backdrop-filter: blur(6px);
-    position: relative;
-    min-width: 0;
+    background-color: rgba(10, 15, 25, 0.85); padding: 10px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.6); display: flex; flex-direction: column; justify-content: center; backdrop-filter: blur(6px); min-width: 0;
 }
-.station-title { font-size: 1.3em; font-weight: bold; color: #ffffff; text-shadow: 0 0 5px rgba(255,255,255,0.5); margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;}
+/* D2 標題完美置中 (燈號固定在左) */
+.station-title { 
+    font-size: 1.2em; font-weight: bold; color: #ffffff; text-shadow: 0 0 5px rgba(255,255,255,0.5); 
+    margin-bottom: 8px; padding-bottom: 5px; display: grid; grid-template-columns: 20px 1fr 20px; align-items: center; 
+}
 
-/* --- D2 展示畫面專用 --- */
-.grid-container { display: grid; gap: 15px; width: 100%; margin: 0 auto; }
-@media (min-width: 1200px) { .grid-container { grid-template-columns: repeat(6, 1fr); max-width: 98%; } }
+/* --- D2 展示專用 (全螢幕自動縮放) --- */
+.grid-container { display: grid; gap: 10px; width: 100%; margin: 0 auto; }
+@media (min-width: 1200px) { 
+    .grid-container { grid-template-columns: repeat(6, 1fr); height: 85vh; } 
+    .station-card p { margin: 5px 0; font-size: 1.1vw; } /* 字體隨螢幕縮放 */
+}
 @media (max-width: 1199px) { .grid-container { grid-template-columns: repeat(2, 1fr); } }
 
-/* --- D3 展示畫面專用 --- */
-.leaderboard-container { width: 95%; max-width: 1000px; margin: 20px auto; display: flex; flex-direction: column; gap: 10px; }
+/* --- D3 展示專用 (5等分排列) --- */
+.leaderboard-container { width: 98%; max-width: 1200px; margin: 10px auto; display: flex; flex-direction: column; gap: 10px; }
 .leaderboard-row {
-    background: rgba(10, 15, 25, 0.85); 
-    border: 1px solid rgba(255, 255, 255, 0.15); /* 拔掉金框 */
-    border-radius: 10px;
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 15px 25px; font-size: 1.5em; font-weight: bold;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+    background: rgba(10, 15, 25, 0.85); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px;
+    display: flex; justify-content: space-between; align-items: center; padding: 15px; font-size: 1.4em; font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6); backdrop-filter: blur(6px); text-align: center;
 }
-/* 拔掉前三名的特殊背景色，維持統一黑底 */
-.leaderboard-row.top1, .leaderboard-row.top2, .leaderboard-row.top3 {
-    background: rgba(10, 15, 25, 0.85);
-    border-color: rgba(255, 255, 255, 0.15);
-}
-.rank-badge { width: 50px; text-align: center; color: #ffd700; }
-.team-name { flex: 1.5; text-align: left; padding-left: 20px; }
-.next-station { flex: 1; text-align: center; color: #3498db; font-size: 0.7em; margin-top: 5px; }
-.win-loss { flex: 1; text-align: center; color: #2ecc71; }
-.likes { width: 100px; text-align: right; color: #f1c40f; }
+.rank-badge { flex: 0.5; color: #ffd700; }
+.team-name { flex: 1.5; color: white; }
+.next-station { flex: 1.5; color: #3498db; }
+.win-loss { flex: 1; color: #2ecc71; }
+.likes { flex: 1; color: #f1c40f; text-shadow: 1px 1px 2px #000; }
 @media (max-width: 768px) {
-    .leaderboard-row { font-size: 1.1em; padding: 10px; flex-wrap: wrap; }
-    .team-name { flex: 100%; text-align: center; padding: 0; margin-bottom: 5px; border-bottom: 1px solid #555; }
-    .next-station { display: inline; margin-left: 10px; }
-    .win-loss, .likes { flex: 1; font-size: 0.9em; }
+    .leaderboard-row { font-size: 1em; padding: 10px; flex-wrap: wrap; gap: 5px;}
+    .rank-badge { flex: 0.5; } .team-name { flex: 1; } .next-station { flex: 1.5; }
+    .win-loss { flex: 1; } .likes { flex: 1; }
 }
 
-/* --- 總控台 / 關主畫面共用 --- */
-.btn { border: none; padding: 10px 15px; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 0.9em; }
+/* --- 總控台/關主共用 --- */
+.btn { border: none; padding: 8px 12px; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 0.9em; }
 .btn:active { transform: scale(0.95); }
-.btn-score { background: #f39c12; } .btn-export { background: #27ae60; }
-.btn-setting { background: #3498db; } .btn-base { background: #9b59b6; }
-.btn-danger { background: #c0392b; } .btn-toggle { background: #e74c3c; } .btn-add { background: #1abc9c; }
+.btn-score { background: #f39c12; } .btn-export { background: #27ae60; } .btn-setting { background: #3498db; } 
+.btn-base { background: #9b59b6; } .btn-danger { background: #c0392b; } .btn-toggle { background: #e74c3c; } .btn-add { background: #1abc9c; }
 
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
 .modal-content { background: #1c2833; padding: 25px; border-radius: 10px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; border: 1px solid #f1c40f; }
-.form-group { margin-bottom: 15px; text-align: left; }
-.form-group label { display: block; font-weight: bold; margin-bottom: 5px; color: #ecf0f1; }
+.form-group { margin-bottom: 15px; text-align: left; } .form-group label { display: block; font-weight: bold; margin-bottom: 5px; color: #ecf0f1; }
 .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #7f8c8d; background: #2c3e50; color: white; }
-.form-row { display: flex; gap: 10px; } .form-row > div { flex: 1; }
-.modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+.form-row { display: flex; gap: 10px; } .form-row > div { flex: 1; } .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+.status-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.dot-green { background: #2ecc71; box-shadow: 0 0 8px #2ecc71; } .dot-red { background: #e74c3c; box-shadow: 0 0 8px #e74c3c; }
+.record-list { list-style: none; padding: 0; margin: 0; font-size: 0.9em; overflow-y: auto; text-align: left;}
+.record-list li { padding: 8px 5px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;}
+.del-btn { background: #e74c3c; color: white; border: none; border-radius: 3px; cursor: pointer; padding: 3px 6px; }
+details { margin-top: 5px; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 5px; cursor: pointer; font-size: 0.85em;}
+summary { font-weight: bold; color: #3498db; outline: none; }
 
-.status-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-.dot-green { background: #2ecc71; box-shadow: 0 0 8px #2ecc71; }
-.dot-red { background: #e74c3c; box-shadow: 0 0 8px #e74c3c; }
-.record-list { list-style: none; padding: 0; margin: 0; font-size: 0.9em; flex: 1; overflow-y: auto; text-align: left;}
-.record-list li { padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between;}
-.del-btn { background: #e74c3c; color: white; border: none; border-radius: 3px; cursor: pointer; padding: 2px 5px; }
-
-/* 隱藏大螢幕遮罩 */
-#hideOverlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.95); z-index: 9999;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    font-size: 3em; font-weight: bold; text-align: center; backdrop-filter: blur(15px);
-}
+/* 總控台縮放為 5 欄 */
+@media (min-width: 1200px) { .monitor-grid { grid-template-columns: repeat(5, 1fr) !important; } }
+#hideOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 3em; font-weight: bold; text-align: center; backdrop-filter: blur(15px); }

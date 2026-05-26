@@ -29,17 +29,28 @@ function updateRoundUI() {
 
 function updateLikeUI() {
     const max = (sysSettings && sysSettings.maxLikes) ? sysSettings.maxLikes : 3;
-    document.getElementById('cntA').innerText = `${likesA}/${max}`;
-    document.getElementById('cntB').innerText = `${likesB}/${max}`;
-    document.getElementById('likeBtnA').disabled = (!isOccupied || likesA >= max);
-    document.getElementById('likeBtnB').disabled = (!isOccupied || likesB >= max);
+    document.getElementById('cntA').innerText = `${likesA}`;
+    document.getElementById('cntB').innerText = `${likesB}`;
+    
+    // 🌟 D3 聯合限制：A + B 不得超過總數
+    let totalGiven = likesA + likesB;
+    document.getElementById('likeBtnA').disabled = (!isOccupied || totalGiven >= max);
+    document.getElementById('likeBtnB').disabled = (!isOccupied || totalGiven >= max);
 }
 
 document.getElementById('prevRoundBtn').addEventListener('click', () => { if(currentRound > 1) { currentRound--; updateRoundUI(); }});
 document.getElementById('nextRoundBtn').addEventListener('click', () => { currentRound++; updateRoundUI(); });
 
-document.getElementById('likeBtnA').addEventListener('click', () => { if(isOccupied) { likesA++; updateLikeUI(); } else alert("請切換為🔴闖關中"); });
-document.getElementById('likeBtnB').addEventListener('click', () => { if(isOccupied) { likesB++; updateLikeUI(); } else alert("請切換為🔴闖關中"); });
+document.getElementById('likeBtnA').addEventListener('click', () => { 
+    if(!isOccupied) return alert("請切換為🔴闖關中");
+    const max = (sysSettings && sysSettings.maxLikes) ? sysSettings.maxLikes : 3;
+    if(likesA + likesB < max) { likesA++; updateLikeUI(); } 
+});
+document.getElementById('likeBtnB').addEventListener('click', () => { 
+    if(!isOccupied) return alert("請切換為🔴闖關中");
+    const max = (sysSettings && sysSettings.maxLikes) ? sysSettings.maxLikes : 3;
+    if(likesA + likesB < max) { likesB++; updateLikeUI(); } 
+});
 
 function updateWinnerSelect() {
     const a = document.getElementById('teamASelect').value, b = document.getElementById('teamBSelect').value;
