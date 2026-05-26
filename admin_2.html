@@ -3,50 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PK 戰績輸入</title>
+    <title>D3 關主專用後台</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        body { font-family: "微軟正黑體", sans-serif; background-color: #f4f4f9; padding: 20px; text-align: center; }
-        .container { background: white; padding: 20px; border-radius: 10px; max-width: 450px; margin: 0 auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .vs-box { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 20px 0; }
-        .vs-text { font-size: 2em; font-weight: bold; color: #e74c3c; }
-        .station-badge { background-color: #e74c3c; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
-        .round-ctrl { background: #f1f2f6; padding: 10px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        select { padding: 10px; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; width: 100%; }
-        .like-btn-sq { width: 45px; height: 45px; background: #f1c40f; border: none; border-radius: 8px; font-size: 1.2em; cursor: pointer; }
-        .submit-btn { background: #27ae60; color: white; border: none; padding: 15px; width: 100%; font-size: 1.2em; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; }
+        .container { background: rgba(15, 20, 30, 0.9); padding: 20px; border-radius: 12px; max-width: 400px; margin: 20px auto; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 16px rgba(0,0,0,0.6); backdrop-filter: blur(8px); text-align: center; }
+        .station-badge { background: #e74c3c; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-bottom: 15px; display: inline-block; font-size: 1.2em; }
+        .status-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; margin-bottom: 15px; transition: 0.2s; color: white; }
+        .status-green { background-color: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
+        .status-red { background-color: #e74c3c; box-shadow: 0 0 10px #e74c3c; }
+        
+        .round-ctrl { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 15px; }
+        .round-ctrl button { background: #34495e; color: white; border: none; padding: 5px 15px; border-radius: 5px; font-weight: bold; font-size: 1.2em; cursor: pointer; }
+        
+        .team-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .team-row select { flex: 1; padding: 12px; font-size: 1.1em; border-radius: 5px; border: 1px solid #7f8c8d; background: #2c3e50; color: white; font-weight: bold; }
+        .square-btn { width: 55px; height: 50px; background: #f1c40f; color: #333; border: none; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; line-height: 1.2; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .square-btn:disabled { background: #7f8c8d; cursor: not-allowed; }
+        
+        .vs-text { font-size: 1.8em; font-weight: bold; color: #e74c3c; margin: 5px 0; font-style: italic; }
+        
+        .winner-box { background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; padding: 15px; border-radius: 8px; margin-top: 20px; }
+        .btn-submit { background: #27ae60; color: white; width: 100%; padding: 15px; font-size: 1.2em; border-radius: 8px; border: none; font-weight: bold; margin-top: 15px; cursor: pointer; }
+        .record-item { background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #e74c3c; text-align: left; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="station-badge" id="stationDisplay">載入中...</div>
+    <div class="container" id="mainContainer">
+        <div class="station-badge" id="stationDisplay">正在載入關卡...</div>
         
+        <button id="statusToggleBtn" class="status-btn status-green">🟢 空關 (點擊切換)</button>
+
         <div class="round-ctrl">
-            <button onclick="changeRound(-1)">◀</button>
-            <b id="roundText">第 1 輪</b>
-            <button onclick="changeRound(1)">▶</button>
+            <button id="prevRoundBtn">◀</button>
+            <b id="roundText" style="font-size:1.2em; color:#f1c40f;">第 1 輪</b>
+            <button id="nextRoundBtn">▶</button>
         </div>
 
-        <div class="vs-box">
-            <div style="flex:1;">
-                <select id="teamASelect"></select>
-                <button class="like-btn-sq" id="likeA">👍<br><small id="lA">0</small></button>
-            </div>
-            <div class="vs-text">VS</div>
-            <div style="flex:1;">
-                <select id="teamBSelect"></select>
-                <button class="like-btn-sq" id="likeB">👍<br><small id="lB">0</small></button>
-            </div>
+        <div class="team-row">
+            <select id="teamASelect"></select>
+            <button class="square-btn" id="likeBtnA">👍<br><small id="cntA">0</small></button>
+        </div>
+        <div class="vs-text">VS</div>
+        <div class="team-row">
+            <select id="teamBSelect"></select>
+            <button class="square-btn" id="likeBtnB">👍<br><small id="cntB">0</small></button>
         </div>
 
-        <div style="background:#ffeaa7; padding:10px; border-radius:8px;">
-            <label>🏆 誰贏了？</label>
-            <select id="winnerSelect"></select>
+        <div class="winner-box">
+            <label style="color:#e74c3c; font-weight:bold; display:block; margin-bottom:5px;">🏆 選擇獲勝隊伍</label>
+            <select id="winnerSelect" style="width:100%; padding:10px; font-size:1.1em; border-radius:5px; border:2px solid #e74c3c; background:#2c3e50; color:white; font-weight:bold;"></select>
         </div>
 
-        <button class="submit-btn" id="submitBtn">送出對戰戰績 🚀</button>
+        <button id="submitBtn" class="btn-submit">送出對戰戰績 🚀</button>
 
-        <hr>
+        <hr style="border-top:1px solid rgba(255,255,255,0.2); margin:20px 0;">
+        <h3 style="margin-top: 0; color:#f1c40f;">📜 本關對戰紀錄</h3>
         <div id="stationLeaderboard"></div>
     </div>
     <script type="module" src="admin_2.js"></script>

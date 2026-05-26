@@ -1,82 +1,119 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-const firebaseConfig = { /* 你的 config */ };
+const firebaseConfig = { apiKey: "AIzaSyBo5iMRonG0rFu6ZuIBJFXzwnWF9xiAKgQ", authDomain: "awaken-c5fca.firebaseapp.com", projectId: "awaken-c5fca", storageBucket: "awaken-c5fca.firebasestorage.app" };
 const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 const urlParams = new URLSearchParams(window.location.search); const currentStation = parseInt(urlParams.get('station')) || 1; 
 
-let sysSettings = null, currentRound = 1, likesA = 0, likesB = 0;
+let sysSettings = null, isOccupied = false;
+let currentRound = 1, likesA = 0, likesB = 0;
 
-window.changeRound = (val) => {
-    currentRound += val; if(currentRound < 1) currentRound = 1;
-    updateUIForRound();
-};
+// 🔒 鎖定遮罩
+const lockOverlay = document.createElement('div');
+lockOverlay.style = "display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); color:white; z-index:9999; flex-direction:column; justify-content:center; align-items:center; font-size:2em; font-weight:bold; backdrop-filter:blur(10px);";
+lockOverlay.innerHTML = "🔒<br>輸入已鎖定<br><span style='font-size:0.5em; color:#ccc; margin-top:10px;'>等待總控台開放</span>";
+document.body.appendChild(lockOverlay);
 
-function updateUIForRound() {
+// 更新輪次與賽程
+function updateRoundUI() {
     document.getElementById('roundText').innerText = `第 ${currentRound} 輪`;
-    likesA = 0; likesB = 0; // 🌟 換輪次按讚重置
-    updateLikeCounts();
+    likesA = 0; likesB = 0; updateLikeUI(); // 換輪次清空讚數
+    
     if(sysSettings && sysSettings.schedule && sysSettings.schedule[currentRound] && sysSettings.schedule[currentRound][currentStation]) {
         const m = sysSettings.schedule[currentRound][currentStation];
         document.getElementById('teamASelect').value = m.a;
         document.getElementById('teamBSelect').value = m.b;
-        updateWinnerSelect();
     }
+    updateWinnerSelect();
 }
 
-function updateLikeCounts() {
-    document.getElementById('lA').innerText = likesA;
-    document.getElementById('lB').innerText = likesB;
+function updateLikeUI() {
+    const max = (sysSettings && sysSettings.maxLikes) ? sysSettings.maxLikes : 3;
+    document.getElementById('cntA').innerText = `${likesA}/${max}`;
+    document.getElementById('cntB').innerText = `${likesB}/${max}`;
+    document.getElementById('likeBtnA').disabled = (!isOccupied || likesA >= max);
+    document.getElementById('likeBtnB').disabled = (!isOccupied || likesB >= max);
 }
+
+document.getElementById('prevRoundBtn').addEventListener('click', () => { if(currentRound > 1) { currentRound--; updateRoundUI(); }});
+document.getElementById('nextRoundBtn').addEventListener('click', () => { currentRound++; updateRoundUI(); });
+
+document.getElementById('likeBtnA').addEventListener('click', () => { if(isOccupied) { likesA++; updateLikeUI(); } else alert("請切換為🔴闖關中"); });
+document.getElementById('likeBtnB').addEventListener('click', () => { if(isOccupied) { likesB++; updateLikeUI(); } else alert("請切換為🔴闖關中"); });
 
 function updateWinnerSelect() {
     const a = document.getElementById('teamASelect').value, b = document.getElementById('teamBSelect').value;
     document.getElementById('winnerSelect').innerHTML = `<option value="${a}">${a}</option><option value="${b}">${b}</option>`;
 }
-
 document.getElementById('teamASelect').addEventListener('change', updateWinnerSelect);
 document.getElementById('teamBSelect').addEventListener('change', updateWinnerSelect);
-document.getElementById('likeA').addEventListener('click', () => { if(likesA < 3) { likesA++; updateLikeCounts(); } });
-document.getElementById('likeB').addEventListener('click', () => { if(likesB < 3) { likesB++; updateLikeCounts(); } });
 
-onSnapshot(doc(db, "settings_2", "global"), (docSnap) => {
+// 燈號控制
+const statusBtn = document.getElementById('statusToggleBtn');
+statusBtn.addEventListener('click', async () => {
+    isOccupied = !isOccupied;
+    let newStatus = { ...sysSettings.d3_status };
+    newStatus[currentStation] = isOccupied ? 'red' : 'green';
+    statusBtn.innerText = "更新中...";
+    if (isOccupied) { likesA = 0; likesB = 0; } // 切換紅燈清空
+    await updateDoc(doc(db, "settings_global", "global"), { d3_status: newStatus });
+});
+
+onSnapshot(doc(db, "settings_global", "global"), (docSnap) => {
     if (docSnap.exists()) {
         sysSettings = docSnap.data();
-        document.getElementById('stationDisplay').innerText = `第 ${currentStation} 關`;
+        lockOverlay.style.display = sysSettings.d3_locked ? "flex" : "none";
+        
+        isOccupied = (sysSettings.d3_status && sysSettings.d3_status[currentStation] === 'red');
+        statusBtn.className = isOccupied ? "status-btn status-red" : "status-btn status-green";
+        statusBtn.innerText = isOccupied ? "🔴 闖關中 (點擊切換空關)" : "🟢 目前為空關 (點擊開始)";
+        updateLikeUI();
+
+        document.getElementById('stationDisplay').innerText = `第 ${currentStation} 關 (⚔️ PK對抗)`;
         const tA = document.getElementById('teamASelect'), tB = document.getElementById('teamBSelect');
-        tA.innerHTML = ""; tB.innerHTML = "";
-        for (let i = 1; i <= sysSettings.numTeams; i++) {
-            let opt = `<option value="第${i}隊">第 ${i} 隊</option>`;
-            tA.innerHTML += opt; tB.innerHTML += opt;
+        if(tA.options.length === 0) {
+            for (let i = 1; i <= (sysSettings.numTeams||15); i++) {
+                let opt = `<option value="第${i}隊">第 ${i} 隊</option>`;
+                tA.innerHTML += opt; tB.innerHTML += opt;
+            }
+            updateRoundUI(); // 初次載入
         }
-        updateUIForRound();
     }
 });
 
-onSnapshot(collection(db, "record_2"), (snapshot) => {
-    let records = [];
-    snapshot.forEach(d => { if(d.data().station === currentStation) records.push({id: d.id, ...d.data()}); });
-    records.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
-    const board = document.getElementById('stationLeaderboard'); board.innerHTML = "";
-    records.forEach(r => {
+onSnapshot(collection(db, "records_d3"), (snapshot) => {
+    const board = document.getElementById('stationLeaderboard'); board.innerHTML = ""; 
+    let records = []; snapshot.forEach(d => records.push({id: d.id, ...d.data()}));
+    
+    let stRecs = records.filter(r => r.station === currentStation).sort((a,b) => b.createdAt - a.createdAt);
+    if(stRecs.length === 0) { board.innerHTML = "<p style='color:#888;'>尚無成績</p>"; return; }
+    
+    stRecs.forEach(r => {
         const item = document.createElement('div'); item.className = 'record-item';
-        item.style = "background:#eee; padding:10px; margin-bottom:5px; border-radius:5px; display:flex; justify-content:space-between;";
-        item.innerHTML = `<span>輪${r.round}: <b>${r.winner} 勝</b> (vs ${r.loser}) <small>👍A:${r.likesA} B:${r.likesB}</small></span><button onclick="window.del('${r.id}')">刪</button>`;
+        item.innerHTML = `<span>[輪${r.round}] <b>${r.winner} 勝</b><br><small style="color:#aaa;">(👍${r.likesA} vs 👍${r.likesB})</small></span><button class="btn btn-danger" style="padding:5px;" data-id="${r.id}">刪除</button>`;
         board.appendChild(item);
     });
+    document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', async (e) => {
+        if(confirm("刪除？")) await deleteDoc(doc(db, "records_d3", e.target.getAttribute('data-id')));
+    }));
 });
 
-window.del = async (id) => { if(confirm("刪除？")) await deleteDoc(doc(db, "record_2", id)); };
-
 document.getElementById('submitBtn').addEventListener('click', async () => {
+    if (!isOccupied) return alert("❌ 請切換為「🔴 闖關中」才能送出！");
     const teamA = document.getElementById('teamASelect').value, teamB = document.getElementById('teamBSelect').value;
+    if (teamA === teamB) return alert("❌ 隊伍不能相同！");
     const winner = document.getElementById('winnerSelect').value;
-    const loser = (winner === teamA) ? teamB : teamA;
+
     try {
-        await addDoc(collection(db, "record_2"), { 
-            station: currentStation, round: currentRound, teamA, teamB, winner, loser, likesA, likesB, createdAt: Date.now() 
+        document.getElementById('submitBtn').disabled = true;
+        await addDoc(collection(db, "records_d3"), { 
+            station: currentStation, round: currentRound, teamA, teamB, winner, 
+            loser: (winner === teamA ? teamB : teamA), 
+            likesA, likesB, createdAt: Date.now() 
         });
-        alert("✅ 送出成功！自動跳轉下一輪");
-        changeRound(1); // 🌟 自動跳下一輪
-    } catch (e) { alert("錯誤！"); }
+        statusBtn.click(); // 自動切換為綠燈
+        alert("✅ 送出成功！即將自動跳至下一輪");
+        currentRound++; updateRoundUI(); // 自動跳轉下一輪
+    } catch (error) { alert("發生錯誤"); }
+    document.getElementById('submitBtn').disabled = false;
 });

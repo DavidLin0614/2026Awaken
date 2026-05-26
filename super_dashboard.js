@@ -1,58 +1,105 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-const firebaseConfig = { /* 你的 config */ };
-const app = initializeApp(firebaseConfig); const db = getFirestore(app);
+const firebaseConfig = { 
+    apiKey: "AIzaSyBo5iMRonG0rFu6ZuIBJFXzwnWF9xiAKgQ",
+    authDomain: "awaken-c5fca.firebaseapp.com",
+    projectId: "awaken-c5fca",
+    storageBucket: "awaken-c5fca.firebasestorage.app"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-let sysD2 = {}, sysD3 = {};
+let sysSettings = {};
+let recordsD2 = [];
+let recordsD3 = [];
+let recordsBonus = [];
 
-// 1. 監聽 D2 狀態 (燈號)
-onSnapshot(doc(db, "settings", "global"), (docSnap) => {
+// 監聽全域設定
+onSnapshot(doc(db, "settings_global", "global"), (docSnap) => {
     if (docSnap.exists()) {
-        sysD2 = docSnap.data();
-        const d2Container = document.getElementById('d2Monitor');
-        d2Container.innerHTML = "";
-        for (let i = 1; i <= (sysD2.numStations || 10); i++) {
-            let status = (sysD2.stationStatus && sysD2.stationStatus[i]) || 'green';
-            d2Container.innerHTML += `<div class="mini-card ${status}">第 ${i} 關<br>${status === 'red' ? '🔴 闖關中' : '🟢 空關'}</div>`;
-        }
+        sysSettings = docSnap.data();
+        renderMonitors();
+        updateScoreSummary();
+        updateButtonStatus();
     }
 });
 
-// 2. 監聽 D3 狀態 (目前的輪次)
-onSnapshot(collection(db, "record_2"), (snapshot) => {
-    const d3Container = document.getElementById('d3Monitor');
-    d3Container.innerHTML = "";
-    let stationRounds = {};
-    snapshot.forEach(d => {
-        let r = d.data();
-        if(!stationRounds[r.station] || r.round > stationRounds[r.station]) {
-            stationRounds[r.station] = r.round;
-        }
-    });
-    for(let i=1; i<=15; i++) {
-        let r = stationRounds[i] || 0;
-        d3Container.innerHTML += `<div class="mini-card" style="border-left-color:#e74c3c;">第 ${i} 關<br>📍 第 ${r} 輪</div>`;
-    }
+// 監聽 D2 資料
+onSnapshot(collection(db, "records_d2"), (snapshot) => {
+    recordsD2 = [];
+    snapshot.forEach(d => recordsD2.push({id: d.id, ...d.data()}));
+    renderMonitors();
+    updateScoreSummary();
 });
 
-// 3. 生成全場加分列表
-const bonusContainer = document.getElementById('bonusContainer');
-for(let i=1; i<=15; i++) {
-    bonusContainer.innerHTML += `
-        <div class="bonus-row">
-            <b>第 ${i} 隊</b>
-            <input type="number" id="bonus_${i}" placeholder="加分">
-            <button class="btn btn-add" onclick="window.giveBonus(${i})">確認加分</button>
-        </div>`;
+// 監聽 D3 資料
+onSnapshot(collection(db, "records_d3"), (snapshot) => {
+    recordsD3 = [];
+    snapshot.forEach(d => recordsD3.push({id: d.id, ...d.data()}));
+    renderMonitors();
+    updateScoreSummary();
+});
+
+// 監聽 額外加分
+onSnapshot(collection(db, "records_bonus"), (snapshot) => {
+    recordsBonus = [];
+    snapshot.forEach(d => recordsBonus.push({id: d.id, ...d.data()}));
+    updateScoreSummary();
+});
+
+// 渲染監控面板 (D2 & D3)
+function renderMonitors() {
+    // D2 監控
+    const d2Monitor = document.getElementById('d2_monitor');
+    d2Monitor.innerHTML = "";
+    const d2Stations = sysSettings.numStations_d2 || 10;
+    for(let i=1; i<=d2Stations; i++) {
+        let status = (sysSettings.d2_status && sysSettings.d2_status[i]) || 'green';
+        let stationRecs = recordsD2.filter(r => r.station === i);
+        // 此處加入 D2 的 Top 3 邏輯與下拉方塊 (略，稍後補全)
+        d2Monitor.innerHTML += `
+            <div class="glass-card station-box">
+                <div style="font-weight:bold; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:5px;">
+                    <span class="status-dot ${status === 'red' ? 'dot-red' : 'dot-green'}"></span>第 ${i} 關
+                </div>
+                <ul class="record-list" id="d2_list_${i}"></ul>
+                <select id="d2_select_${i}" style="margin-top:5px; background:#000; color:#fff; border:none;"></select>
+            </div>`;
+    }
+
+    // D3 監控
+    const d3Monitor = document.getElementById('d3_monitor');
+    d3Monitor.innerHTML = "";
+    const d3Stations = sysSettings.numStations_d3 || 10;
+    for(let i=1; i<=d3Stations; i++) {
+        let status = (sysSettings.d3_status && sysSettings.d3_status[i]) || 'green';
+        // 此處加入 D3 的最新三筆與輪次邏輯
+        d3Monitor.innerHTML += `
+            <div class="glass-card station-box">
+                <div style="font-weight:bold; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:5px;">
+                    <span class="status-dot ${status === 'red' ? 'dot-red' : 'dot-green'}"></span>第 ${i} 關
+                </div>
+                <div id="d3_round_${i}" style="font-size:0.8em; color:#f1c40f;">輪次讀取中...</div>
+                <ul class="record-list" id="d3_list_${i}"></ul>
+            </div>`;
+    }
 }
 
-window.giveBonus = async (teamNum) => {
-    let val = parseInt(document.getElementById(`bonus_${teamNum}`).value);
-    if(!val) return;
-    await addDoc(collection(db, "record_bonus"), { team: `第${teamNum}隊`, val: val, timestamp: Date.now() });
-    document.getElementById(`bonus_${teamNum}`).value = "";
-    alert(`✅ 已為第${teamNum}隊 加 ${val} 分`);
-};
+// 更新按鈕鎖定狀態
+function updateButtonStatus() {
+    document.getElementById('d2_lockBtn').innerText = sysSettings.d2_locked ? "🔓 開放 D2 輸入" : "🔒 關閉 D2 輸入";
+    document.getElementById('d3_lockBtn').innerText = sysSettings.d3_locked ? "🔓 開放 D3 輸入" : "🔒 關閉 D3 輸入";
+    document.getElementById('d2_hideBtn').innerText = sysSettings.d2_hidden ? "📺 恢復 D2 展示" : "🙈 隱藏 D2 展示";
+    document.getElementById('d3_hideBtn').innerText = sysSettings.d3_hidden ? "📺 恢復 D3 展示" : "🙈 隱藏 D3 展示";
+}
 
-// ... 其他鎖定與儲存設定邏輯 (略)
+// 計算總分摘要 (簡略版)
+function updateScoreSummary() {
+    const summary = document.getElementById('score_summary');
+    summary.innerHTML = "";
+    for(let i=1; i<= (sysSettings.numTeams || 15); i++) {
+        let t = `第${i}隊`;
+        summary.innerHTML += `<div class="glass-card" style="padding:10px;">${t}<br><b style="color:#f1c40f;">0 分</b></div>`;
+    }
+}

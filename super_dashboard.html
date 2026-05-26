@@ -3,76 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>👑 全能總控台</title>
+    <title>2026 營會全能總控台</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .tab-menu { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
-        .tab-btn { padding: 12px 25px; cursor: pointer; background: #34495e; border: none; color: white; border-radius: 5px; font-weight: bold; }
-        .tab-btn.active { background: #f39c12; }
-        .tab-content { display: none; background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 15px; background: rgba(255,255,255,0.1); border: none; color: #aaa; cursor: pointer; font-size: 1.1em; font-weight: bold; }
+        .tab-btn.active { background: #f39c12; color: white; border-top: 3px solid white; }
+        .tab-content { display: none; }
         .tab-content.active { display: block; }
-        
-        .monitor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
-        .mini-card { background: #2c3e50; padding: 10px; border-radius: 5px; text-align: center; border-left: 5px solid #ccc; }
-        .mini-card.red { border-left-color: #e74c3c; }
-        .mini-card.green { border-left-color: #27ae60; }
-        
-        .bonus-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; }
-        input[type="number"] { width: 80px; }
+        .control-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; }
+        .monitor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
     </style>
 </head>
 <body>
     <h1>👑 營會全能總控台</h1>
 
-    <div class="tab-menu">
-        <button class="tab-btn active" onclick="openTab('monitor')">📊 即時監控</button>
-        <button class="tab-btn" onclick="openTab('bonus')">✨ 全場加分</button>
-        <button class="tab-btn" onclick="openTab('settings')">⚙️ 系統設定</button>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab('d2-panel')">🏃 D2 自由闖關控台</button>
+        <button class="tab-btn" onclick="openTab('d3-panel')">⚔️ D3 PK對抗控台</button>
+        <button class="tab-btn" onclick="openTab('score-panel')">🏆 總積分管理</button>
     </div>
 
-    <!-- 1. 即時監控分頁 -->
-    <div id="monitor" class="tab-content active">
-        <div style="display:flex; gap:20px;">
-            <div style="flex:1;">
-                <h3 style="color:#2ecc71;">🟢 D2 關卡燈號</h3>
-                <div class="monitor-grid" id="d2Monitor"></div>
-            </div>
-            <div style="flex:1;">
-                <h3 style="color:#e74c3c;">⚔️ D3 關卡輪次</h3>
-                <div class="monitor-grid" id="d3Monitor"></div>
-            </div>
+    <!-- 分頁 A：D2 總控台 -->
+    <div id="d2-panel" class="tab-content active">
+        <div class="control-bar">
+            <button class="btn btn-setting" id="d2_setBtn">⚙️ D2 參數設定</button>
+            <button class="btn btn-base" id="d2_addBtn">➕ 新增 D2 資料</button>
+            <button class="btn btn-toggle" id="d2_lockBtn">🔒 關閉 D2 輸入</button>
+            <button class="btn btn-score" id="d2_hideBtn">🙈 隱藏 D2 展示</button>
+            <button class="btn btn-danger" id="d2_clearBtn">💣 一鍵清空 D2</button>
+        </div>
+        <div class="monitor-grid" id="d2_monitor"></div>
+    </div>
+
+    <!-- 分頁 B：D3 總控台 -->
+    <div id="d3-panel" class="tab-content">
+        <div class="control-bar">
+            <button class="btn btn-setting" id="d3_setBtn">⚙️ D3 參數設定</button>
+            <button class="btn btn-base" id="d3_addBtn">➕ 新增 D3 資料</button>
+            <button class="btn btn-setting" id="d3_scheduleBtn">📅 匯入賽程表</button>
+            <button class="btn btn-toggle" id="d3_lockBtn">🔒 關閉 D3 輸入</button>
+            <button class="btn btn-score" id="d3_hideBtn">🙈 隱藏 D3 展示</button>
+            <button class="btn btn-danger" id="d3_clearBtn">💣 一鍵清空 D3</button>
+        </div>
+        <div class="monitor-grid" id="d3_monitor"></div>
+    </div>
+
+    <!-- 分頁 C：總分控台 -->
+    <div id="score-panel" class="tab-content">
+        <div class="control-bar">
+            <button class="btn btn-setting" id="score_setBtn">👥 設定總隊伍數</button>
+            <button class="btn btn-base" id="score_addBtn">➕ 新增額外加分</button>
+            <button class="btn btn-score" onclick="window.location.href='total_scoreboard.html'">📊 前往總分展示頁</button>
+        </div>
+        <div class="glass-card" style="padding: 20px;">
+            <h3>📊 目前各隊即時總分</h3>
+            <div id="score_summary" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:10px;"></div>
         </div>
     </div>
 
-    <!-- 2. 全場加分分頁 -->
-    <div id="bonus" class="tab-content">
-        <h3>✨ 牧者/手動全場加分</h3>
-        <div id="bonusContainer"></div>
-    </div>
-
-    <!-- 3. 系統設定分頁 -->
-    <div id="settings" class="tab-content">
-        <div class="control-panel" style="background:none;">
-            <button class="btn btn-toggle" id="lockBtn">🔒 鎖定系統</button>
-            <button class="btn btn-toggle-screen" id="hideBtn">🙈 隱藏大螢幕</button>
-            <button class="btn btn-schedule" onclick="window.location.href='dashboard_2.html'">📅 前往 D3 賽程匯入</button>
-        </div>
-        <hr>
-        <h3>🛠️ 全域參數調整</h3>
-        <div class="form-row">
-            <div class="form-group"><label>D2 一個讚幾分</label><input type="number" id="set_like2"></div>
-            <div class="form-group"><label>D3 一個讚幾分</label><input type="number" id="set_like3"></div>
-        </div>
-        <button class="btn btn-export" id="saveGlobalBtn">💾 儲存全域設定</button>
+    <!-- Modal 區域 (參數設定等) -->
+    <div class="modal-overlay" id="globalModal">
+        <div class="modal-content" id="modalBody"></div>
     </div>
 
     <script type="module" src="super_dashboard.js"></script>
     <script>
         function openTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            event.currentTarget.classList.add('active');
             document.getElementById(id).classList.add('active');
+            event.currentTarget.classList.add('active');
         }
     </script>
 </body>
