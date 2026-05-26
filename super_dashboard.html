@@ -148,5 +148,44 @@
         }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     </script>
+
+    <!-- ➕ D2 手動新增/編輯 Modal -->
+    <div class="modal-overlay" id="modal_add_d2">
+        <div class="modal-content">
+            <h2 id="d2_modal_title">➕ 新增/編輯 D2 紀錄</h2>
+            <input type="hidden" id="d2_edit_id">
+            <div class="form-group"><label>關卡</label><select id="add_d2_st"></select></div>
+            <div class="form-group"><label>隊伍</label><select id="add_d2_team"></select></div>
+            <div class="form-group"><label>數值 (時間請換算為總秒數)</label><input type="number" id="add_d2_val"></div>
+            <div class="modal-btns">
+                <button class="btn btn-add" style="flex:1;" id="save_d2_record">🚀 儲存紀錄</button>
+                <button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_add_d2')">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ➕ D3 手動新增/編輯 Modal -->
+    <div class="modal-overlay" id="modal_add_d3">
+        <div class="modal-content">
+            <h2 id="d3_modal_title">➕ 新增/編輯 D3 紀錄</h2>
+            <input type="hidden" id="d3_edit_id">
+            <div class="form-row">
+                <div class="form-group"><label>關卡</label><select id="add_d3_st"></select></div>
+                <div class="form-group"><label>輪次</label><input type="number" id="add_d3_round" value="1"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>隊伍 A</label><select id="add_d3_teamA"></select></div>
+                <div class="form-group"><label>隊伍 B</label><select id="add_d3_teamB"></select></div>
+            </div>
+            <div class="form-group">
+                <label style="color:#e74c3c;">獲勝隊伍</label>
+                <select id="add_d3_winner"></select>
+            </div>
+            <div class="modal-btns">
+                <button class="btn btn-add" style="flex:1;" id="save_d3_record">🚀 儲存紀錄</button>
+                <button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_add_d3')">取消</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

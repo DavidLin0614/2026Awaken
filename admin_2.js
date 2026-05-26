@@ -27,13 +27,17 @@ function updateRoundUI() {
     updateWinnerSelect();
 }
 
+// 更新按讚UI與防呆限制
 function updateLikeUI() {
-    const max = (sysSettings && sysSettings.maxLikes) ? sysSettings.maxLikes : 3;
+    // 🌟 正確抓取 d3_maxLikes
+    const max = (sysSettings && sysSettings.d3_maxLikes) ? sysSettings.d3_maxLikes : 3;
+    let totalGiven = likesA + likesB;
+    
     document.getElementById('cntA').innerText = `${likesA}`;
     document.getElementById('cntB').innerText = `${likesB}`;
+    document.getElementById('totalLikesDisplay').innerText = `${totalGiven} / ${max}`;
     
-    // 🌟 D3 聯合限制：A + B 不得超過總數
-    let totalGiven = likesA + likesB;
+    // 超過總和就鎖住
     document.getElementById('likeBtnA').disabled = (!isOccupied || totalGiven >= max);
     document.getElementById('likeBtnB').disabled = (!isOccupied || totalGiven >= max);
 }

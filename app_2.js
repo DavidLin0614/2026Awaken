@@ -15,9 +15,18 @@ function renderLeaderboard() {
     let teamStats = {}; 
     for(let i=1; i<=sysSettings.numTeams; i++) teamStats[`第${i}隊`] = { wins: 0, losses: 0, likes: 0 };
 
+    // 1. 統計勝負與讚數
     globalRecords.forEach(r => {
-        if (r.isLikeOnly) { if(teamStats[r.team]) teamStats[r.team].likes += r.likes; } 
-        else if (!r.isNPC) {
+        // 🌟 正確抓取對戰紀錄中的讚數
+        if (r.teamA && teamStats[r.teamA]) {
+            teamStats[r.teamA].likes += (r.likesA || 0);
+        }
+        if (r.teamB && teamStats[r.teamB]) {
+            teamStats[r.teamB].likes += (r.likesB || 0);
+        }
+
+        // 統計勝負
+        if (r.winner) {
             if(teamStats[r.winner]) teamStats[r.winner].wins += 1;
             if(teamStats[r.loser]) teamStats[r.loser].losses += 1;
         }

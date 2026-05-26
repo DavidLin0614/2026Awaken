@@ -15,9 +15,12 @@ document.body.appendChild(lockOverlay);
 
 function updateLikeUI() {
     const btn = document.getElementById('instantLikeBtn');
-    const max = (sysSettings && sysSettings.maxLikes) ? sysSettings.maxLikes : 3;
-    document.getElementById('likeCountText').innerText = `(${sessionLikes}/${max})`;
-    btn.disabled = (!isOccupied || sessionLikes >= max);
+    // 🌟 正確抓取 d2_maxLikes
+    const max = (sysSettings && sysSettings.d2_maxLikes) ? sysSettings.d2_maxLikes : 3;
+    
+    btn.innerHTML = `送出 👍<br><small>(${currentSessionLikes}/${max})</small>`;
+    btn.disabled = (!isOccupied || currentSessionLikes >= max);
+    btn.style.background = (btn.disabled) ? "#bdc3c7" : "#f1c40f";
 }
 
 document.getElementById('statusToggleBtn').addEventListener('click', async () => {
@@ -77,6 +80,16 @@ onSnapshot(collection(db, "records_d2"), (snapshot) => {
     document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', async (e) => {
         if(confirm("刪除？")) await deleteDoc(doc(db, "records_d2", e.target.getAttribute('data-id')));
     }));
+});
+
+// 🌟 即時監聽輸入，超過上限直接強制改回上限值
+document.getElementById('minInput').addEventListener('input', function() {
+    let max = (sysSettings && sysSettings.d2_maxMin) ? sysSettings.d2_maxMin : 59;
+    if (parseInt(this.value) > max) this.value = max;
+});
+document.getElementById('scoreInput').addEventListener('input', function() {
+    let max = (sysSettings && sysSettings.d2_maxScore) ? sysSettings.d2_maxScore : 999;
+    if (parseInt(this.value) > max) this.value = max;
 });
 
 document.getElementById('submitBtn').addEventListener('click', async () => {

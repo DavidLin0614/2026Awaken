@@ -7,10 +7,26 @@ h1 { text-align: center; margin-top: 10px; font-size: 2.5em; text-shadow: 2px 2p
     background-color: rgba(10, 15, 25, 0.85); padding: 10px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 8px 16px rgba(0,0,0,0.6); display: flex; flex-direction: column; justify-content: center; backdrop-filter: blur(6px); min-width: 0;
 }
-/* D2 標題完美置中 (燈號固定在左) */
+/* D2 標題絕對置中，燈號抽離文件流放左邊 */
 .station-title { 
-    font-size: 1.2em; font-weight: bold; color: #ffffff; text-shadow: 0 0 5px rgba(255,255,255,0.5); 
-    margin-bottom: 8px; padding-bottom: 5px; display: grid; grid-template-columns: 20px 1fr 20px; align-items: center; 
+    position: relative; /* 讓內部絕對定位有基準 */
+    font-size: 1.2em; 
+    font-weight: bold; 
+    color: #ffffff; 
+    text-shadow: 0 0 5px rgba(255,255,255,0.5); 
+    margin-bottom: 8px; 
+    padding-bottom: 5px; 
+    text-align: center; /* 字體絕對置中 */
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.status-dot { 
+    position: absolute; /* 抽離出來 */
+    left: 0; 
+    top: 30%; /* 垂直對齊 */
+    width: 12px; 
+    height: 12px; 
+    border-radius: 50%; 
 }
 
 /* --- D2 展示專用 (全螢幕自動縮放) --- */
@@ -34,9 +50,17 @@ h1 { text-align: center; margin-top: 10px; font-size: 2.5em; text-shadow: 2px 2p
 .win-loss { flex: 1; color: #2ecc71; }
 .likes { flex: 1; color: #f1c40f; text-shadow: 1px 1px 2px #000; }
 @media (max-width: 768px) {
-    .leaderboard-row { font-size: 1em; padding: 10px; flex-wrap: wrap; gap: 5px;}
-    .rank-badge { flex: 0.5; } .team-name { flex: 1; } .next-station { flex: 1.5; }
-    .win-loss { flex: 1; } .likes { flex: 1; }
+    .leaderboard-row { 
+        font-size: 0.9em; /* 字體再稍微縮小防換行 */
+        padding: 8px; 
+        flex-wrap: nowrap; /* 絕對不准換行 */
+        gap: 5px; 
+    }
+    .rank-badge { flex: 0.3; } 
+    .team-name { flex: 1.2; text-align: left; padding: 0; border: none; font-size: 0.9em; white-space: nowrap; } 
+    .next-station { flex: 1.5; font-size: 0.8em; white-space: nowrap; }
+    .win-loss { flex: 1.5; font-size: 0.9em; white-space: nowrap; } 
+    .likes { flex: 0.8; font-size: 0.9em; text-align: right; }
 }
 
 /* --- 總控台/關主共用 --- */
