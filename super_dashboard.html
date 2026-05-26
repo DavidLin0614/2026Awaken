@@ -71,6 +71,21 @@
                 <div class="form-group"><label>⏱️ 最大分鐘(防呆)</label><input type="number" id="set_d2_maxMin"></div>
                 <div class="form-group"><label>🎯 最大分數(防呆)</label><input type="number" id="set_d2_maxScore"></div>
             </div>
+            <div class="form-row">
+                <div class="form-group"><label>👍 每關最多可給讚數</label><input type="number" id="set_d2_maxLikes"></div>
+                <div class="form-group"><label>🪙 一個讚加多少分</label><input type="number" id="set_d2_likePts"></div>
+            </div>
+            <hr style="border:1px dashed #7f8c8d; margin:15px 0;">
+            <h3 style="color:#f1c40f; margin-top:0;">🏆 總積分規則設定</h3>
+            <div class="form-row">
+                <div class="form-group"><label>第 1 名</label><input type="number" id="set_d2_top1"></div>
+                <div class="form-group"><label>第 2 名</label><input type="number" id="set_d2_top2"></div>
+                <div class="form-group"><label>第 3 名</label><input type="number" id="set_d2_top3"></div>
+                <div class="form-group"><label>基本分</label><input type="number" id="set_d2_base"></div>
+            </div>
+            <hr style="border:1px dashed #7f8c8d; margin:15px 0;">
+            <h3 style="color:#f1c40f; margin-top:0;">🎛️ 各關卡屬性設定</h3>
+            <div id="d2_station_configs_container"></div>
             <div class="modal-btns">
                 <button class="btn btn-export" style="flex:1;" id="save_d2_settings">💾 儲存</button>
                 <button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_d2_settings')">取消</button>
@@ -84,8 +99,12 @@
             <h2>⚙️ D3 參數設定</h2>
             <div class="form-row">
                 <div class="form-group"><label>🚩 總關卡數</label><input type="number" id="set_d3_stations"></div>
+                <div class="form-group"><label>👍 每關最多可給讚數</label><input type="number" id="set_d3_maxLikes"></div>
+                <div class="form-group"><label>🪙 一個讚加多少分</label><input type="number" id="set_d3_likePts"></div>
             </div>
-            <p style="color:#aaa; font-size:0.9em;">(其餘名次給分與全域讚數請至「總積分管理」設定)</p>
+            <hr style="border:1px dashed #7f8c8d; margin:15px 0;">
+            <h3 style="color:#f1c40f; margin-top:0;">🏆 名次積分規則設定</h3>
+            <div id="d3_rank_scores_container" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;"></div>
             <div class="modal-btns">
                 <button class="btn btn-export" style="flex:1;" id="save_d3_settings">💾 儲存</button>
                 <button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_d3_settings')">取消</button>
@@ -93,7 +112,19 @@
         </div>
     </div>
 
-    <!-- 匯入賽程 Modal -->
+    <!-- 全域(總分)隊伍設定 Modal -->
+    <div class="modal-overlay" id="modal_score_settings">
+        <div class="modal-content">
+            <h2>⚙️ 總分控台設定</h2>
+            <div class="form-group"><label>👥 營會總隊伍數</label><input type="number" id="set_global_teams"></div>
+            <div class="modal-btns">
+                <button class="btn btn-export" style="flex:1;" id="save_global_settings">💾 儲存</button>
+                <button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_score_settings')">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 匯入賽程 Modal (不變) -->
     <div class="modal-overlay" id="modal_d3_schedule">
         <div class="modal-content">
             <h2>📅 匯入 Excel 賽程表</h2>
@@ -101,24 +132,6 @@
             <div class="modal-btns">
                 <button class="btn btn-add" style="flex:1;" id="save_d3_schedule">💾 解析儲存</button>
                 <button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_d3_schedule')">取消</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 全域設定 Modal -->
-    <div class="modal-overlay" id="modal_score_settings">
-        <div class="modal-content">
-            <h2>⚙️ 全域系統設定</h2>
-            <div class="form-row">
-                <div class="form-group"><label>👥 總隊伍數</label><input type="number" id="set_global_teams"></div>
-                <div class="form-group"><label>👍 每關最高按讚數</label><input type="number" id="set_global_maxLikes"></div>
-            </div>
-            <div class="form-row">
-                <div class="form-group"><label>🥇 1個讚 = 幾分？</label><input type="number" id="set_global_likePts"></div>
-            </div>
-            <div class="modal-btns">
-                <button class="btn btn-export" style="flex:1;" id="save_global_settings">💾 儲存</button>
-                <button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_score_settings')">取消</button>
             </div>
         </div>
     </div>

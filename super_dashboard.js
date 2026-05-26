@@ -129,40 +129,91 @@ document.getElementById('d2_setBtn').addEventListener('click', () => {
     document.getElementById('set_d2_stations').value = sysSettings.numStations_d2 || 15;
     document.getElementById('set_d2_maxMin').value = sysSettings.d2_maxMin || 59;
     document.getElementById('set_d2_maxScore').value = sysSettings.d2_maxScore || 999;
+    document.getElementById('set_d2_maxLikes').value = sysSettings.d2_maxLikes || 3;
+    document.getElementById('set_d2_likePts').value = sysSettings.d2_likePts || 10;
+    document.getElementById('set_d2_top1').value = sysSettings.d2_rules ? sysSettings.d2_rules.top1 : 300;
+    document.getElementById('set_d2_top2').value = sysSettings.d2_rules ? sysSettings.d2_rules.top2 : 200;
+    document.getElementById('set_d2_top3').value = sysSettings.d2_rules ? sysSettings.d2_rules.top3 : 100;
+    document.getElementById('set_d2_base').value = sysSettings.d2_rules ? sysSettings.d2_rules.base : 50;
+
+    let confHtml = '';
+    let stations = sysSettings.numStations_d2 || 15;
+    for(let i=1; i<=stations; i++) {
+        let conf = (sysSettings.d2_configs && sysSettings.d2_configs[i]) ? sysSettings.d2_configs[i] : { type: 'time', unit: '' };
+        confHtml += `<div class="form-row" style="margin-bottom:10px; align-items:center;">
+            <label style="width:60px; color:#f1c40f;">第 ${i} 關</label>
+            <select id="st_type_${i}" style="flex:1;"><option value="time" ${conf.type==='time'?'selected':''}>⏱️ 計時</option><option value="score" ${conf.type==='score'?'selected':''}>🎯 計分</option></select>
+            <input type="text" id="st_unit_${i}" placeholder="單位(選填)" value="${conf.unit}" style="flex:1;">
+        </div>`;
+    }
+    document.getElementById('d2_station_configs_container').innerHTML = confHtml;
     document.getElementById('modal_d2_settings').style.display = 'flex';
 });
+
 document.getElementById('d3_setBtn').addEventListener('click', () => {
     document.getElementById('set_d3_stations').value = sysSettings.numStations_d3 || 10;
+    document.getElementById('set_d3_maxLikes').value = sysSettings.d3_maxLikes || 3;
+    document.getElementById('set_d3_likePts').value = sysSettings.d3_likePts || 10;
+    
+    let rankHtml = '';
+    let teams = sysSettings.numTeams || 15;
+    for(let i=1; i<=teams; i++) {
+        let sc = (sysSettings.d3_rankScores && sysSettings.d3_rankScores[i]) ? sysSettings.d3_rankScores[i] : 0;
+        rankHtml += `<div class="form-group"><label>第 ${i} 名得分</label><input type="number" id="d3_rank_${i}" value="${sc}"></div>`;
+    }
+    document.getElementById('d3_rank_scores_container').innerHTML = rankHtml;
     document.getElementById('modal_d3_settings').style.display = 'flex';
 });
+
 document.getElementById('d3_scheduleBtn').addEventListener('click', () => document.getElementById('modal_d3_schedule').style.display = 'flex');
+
 document.getElementById('score_setBtn').addEventListener('click', () => {
     document.getElementById('set_global_teams').value = sysSettings.numTeams || 15;
-    document.getElementById('set_global_maxLikes').value = sysSettings.maxLikes || 3;
-    document.getElementById('set_global_likePts').value = sysSettings.likePoints || 10;
     document.getElementById('modal_score_settings').style.display = 'flex';
 });
 
 // 儲存設定
 document.getElementById('save_d2_settings').addEventListener('click', async () => {
+    let stations = parseInt(document.getElementById('set_d2_stations').value);
+    let configs = {};
+    for(let i=1; i<=stations; i++) {
+        configs[i] = { type: document.getElementById(`st_type_${i}`).value, unit: document.getElementById(`st_unit_${i}`).value };
+    }
     await setDoc(doc(db, "settings_global", "global"), { 
-        numStations_d2: parseInt(document.getElementById('set_d2_stations').value),
+        numStations_d2: stations,
         d2_maxMin: parseInt(document.getElementById('set_d2_maxMin').value),
-        d2_maxScore: parseInt(document.getElementById('set_d2_maxScore').value)
+        d2_maxScore: parseInt(document.getElementById('set_d2_maxScore').value),
+        d2_maxLikes: parseInt(document.getElementById('set_d2_maxLikes').value),
+        d2_likePts: parseInt(document.getElementById('set_d2_likePts').value),
+        d2_rules: {
+            top1: parseInt(document.getElementById('set_d2_top1').value),
+            top2: parseInt(document.getElementById('set_d2_top2').value),
+            top3: parseInt(document.getElementById('set_d2_top3').value),
+            base: parseInt(document.getElementById('set_d2_base').value)
+        },
+        d2_configs: configs
     }, { merge: true });
     document.getElementById('modal_d2_settings').style.display = 'none';
 });
+
 document.getElementById('save_d3_settings').addEventListener('click', async () => {
+    let teams = sysSettings.numTeams || 15;
+    let rankScores = {};
+    for(let i=1; i<=teams; i++) {
+        rankScores[i] = parseInt(document.getElementById(`d3_rank_${i}`).value) || 0;
+    }
     await setDoc(doc(db, "settings_global", "global"), { 
-        numStations_d3: parseInt(document.getElementById('set_d3_stations').value)
+        numStations_d3: parseInt(document.getElementById('set_d3_stations').value),
+        d3_maxLikes: parseInt(document.getElementById('set_d3_maxLikes').value),
+        d3_likePts: parseInt(document.getElementById('set_d3_likePts').value),
+        d3_rankScores: rankScores
     }, { merge: true });
     document.getElementById('modal_d3_settings').style.display = 'none';
 });
+
 document.getElementById('save_global_settings').addEventListener('click', async () => {
     await setDoc(doc(db, "settings_global", "global"), { 
-        numTeams: parseInt(document.getElementById('set_global_teams').value),
-        maxLikes: parseInt(document.getElementById('set_global_maxLikes').value),
-        likePoints: parseInt(document.getElementById('set_global_likePts').value)
+        numTeams: parseInt(document.getElementById('set_global_teams').value)
     }, { merge: true });
     document.getElementById('modal_score_settings').style.display = 'none';
 });

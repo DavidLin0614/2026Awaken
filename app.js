@@ -83,10 +83,10 @@ function renderBoard() {
     });
 }
 
-onSnapshot(doc(db, "settings", "global"), (docSnap) => {
+onSnapshot(doc(db, "settings_global", "global"), (docSnap) => {
     if (docSnap.exists()) { 
         sysSettings = { ...sysSettings, ...docSnap.data() }; 
-        hideOverlay.style.display = sysSettings.hideMain ? "flex" : "none"; 
+        if(hideOverlay) hideOverlay.style.display = sysSettings.d2_hidden ? "flex" : "none"; 
         renderBoard(); 
     }
 });

@@ -1,4 +1,5 @@
 /* style.css - 營會系統 2026 終極版樣式 */
+h1 { text-align: center; margin-top: 20px; font-size: 2.5em; text-shadow: 2px 2px 4px #000; }
 body {
     margin: 0; padding: 10px; font-family: "微軟正黑體", sans-serif;
     background: url('bg.jpg') center/cover fixed no-repeat #000;
@@ -7,11 +8,12 @@ body {
 * { box-sizing: border-box; }
 
 /* --- 共用卡片風格 (微透黑底 + 金邊) --- */
+/* --- 共用卡片風格 (微透黑底無金邊) --- */
 .station-card, .glass-card {
     background-color: rgba(10, 15, 25, 0.85);
     padding: 10px;
     border-radius: 12px;
-    border: 2px solid #f1c40f;
+    border: 1px solid rgba(255, 255, 255, 0.15); /* 拔掉金框，換成微透白細線 */
     box-shadow: 0 8px 16px rgba(0,0,0,0.6);
     text-align: center;
     display: flex; flex-direction: column; justify-content: center;
@@ -29,14 +31,18 @@ body {
 /* --- D3 展示畫面專用 --- */
 .leaderboard-container { width: 95%; max-width: 1000px; margin: 20px auto; display: flex; flex-direction: column; gap: 10px; }
 .leaderboard-row {
-    background: rgba(10, 15, 25, 0.85); border: 2px solid #f1c40f; border-radius: 10px;
+    background: rgba(10, 15, 25, 0.85); 
+    border: 1px solid rgba(255, 255, 255, 0.15); /* 拔掉金框 */
+    border-radius: 10px;
     display: flex; justify-content: space-between; align-items: center;
     padding: 15px 25px; font-size: 1.5em; font-weight: bold;
     box-shadow: 0 4px 12px rgba(0,0,0,0.6); backdrop-filter: blur(6px);
 }
-.leaderboard-row.top1 { border-color: #f1c40f; background: rgba(241, 196, 15, 0.2); }
-.leaderboard-row.top2 { border-color: #bdc3c7; background: rgba(189, 195, 199, 0.2); }
-.leaderboard-row.top3 { border-color: #d35400; background: rgba(211, 84, 0, 0.2); }
+/* 拔掉前三名的特殊背景色，維持統一黑底 */
+.leaderboard-row.top1, .leaderboard-row.top2, .leaderboard-row.top3 {
+    background: rgba(10, 15, 25, 0.85);
+    border-color: rgba(255, 255, 255, 0.15);
+}
 .rank-badge { width: 50px; text-align: center; color: #ffd700; }
 .team-name { flex: 1.5; text-align: left; padding-left: 20px; }
 .next-station { flex: 1; text-align: center; color: #3498db; font-size: 0.7em; margin-top: 5px; }
@@ -70,3 +76,11 @@ body {
 .record-list { list-style: none; padding: 0; margin: 0; font-size: 0.9em; flex: 1; overflow-y: auto; text-align: left;}
 .record-list li { padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between;}
 .del-btn { background: #e74c3c; color: white; border: none; border-radius: 3px; cursor: pointer; padding: 2px 5px; }
+
+/* 隱藏大螢幕遮罩 */
+#hideOverlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.95); z-index: 9999;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    font-size: 3em; font-weight: bold; text-align: center; backdrop-filter: blur(15px);
+}
