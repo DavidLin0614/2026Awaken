@@ -25,32 +25,34 @@
         <button class="tab-btn" onclick="openTab('score-panel')">🏆 總積分管理</button>
     </div>
 
-    <!-- 分頁 A：D2 總控台 -->
+    <!-- 分頁 A：D2 -->
     <div id="d2-panel" class="tab-content active">
         <div class="control-bar">
             <button class="btn btn-setting" id="d2_setBtn">⚙️ D2 參數設定</button>
+            <button class="btn btn-base" id="d2_addBtn">➕ 新增 D2 資料</button>
+            <button class="btn btn-export" id="d2_exportBtn">📊 匯出 D2</button>
             <button class="btn btn-toggle" id="d2_lockBtn">🔒 關閉 D2 輸入</button>
             <button class="btn btn-score" id="d2_hideBtn">🙈 隱藏 D2 展示</button>
-            <button class="btn btn-export" id="d2_exportBtn">📊 匯出 D2</button>
             <button class="btn btn-danger" id="d2_clearBtn">💣 一鍵清空 D2</button>
         </div>
         <div class="monitor-grid" id="d2_monitor"></div>
     </div>
 
-    <!-- 分頁 B：D3 總控台 -->
+    <!-- 分頁 B：D3 -->
     <div id="d3-panel" class="tab-content">
         <div class="control-bar">
             <button class="btn btn-setting" id="d3_setBtn">⚙️ D3 參數設定</button>
-            <button class="btn btn-base" id="d3_scheduleBtn">📅 匯入 Excel 賽程表</button>
+            <button class="btn btn-base" id="d3_addBtn">➕ 新增 D3 資料</button>
+            <button class="btn btn-setting" id="d3_scheduleBtn">📅 匯入 Excel 賽程表</button>
+            <button class="btn btn-export" id="d3_exportBtn">📊 匯出 D3</button>
             <button class="btn btn-toggle" id="d3_lockBtn">🔒 關閉 D3 輸入</button>
             <button class="btn btn-score" id="d3_hideBtn">🙈 隱藏 D3 展示</button>
-            <button class="btn btn-export" id="d3_exportBtn">📊 匯出 D3</button>
             <button class="btn btn-danger" id="d3_clearBtn">💣 一鍵清空 D3</button>
         </div>
         <div class="monitor-grid" id="d3_monitor"></div>
     </div>
 
-    <!-- 分頁 C：總分控台 -->
+    <!-- 分頁 C：總分 -->
     <div id="score-panel" class="tab-content">
         <div class="control-bar">
             <button class="btn btn-setting" id="score_setBtn">⚙️ 全域系統設定</button>
@@ -63,8 +65,6 @@
     </div>
 
     <!-- ================== Modals (彈出視窗) ================== -->
-    
-    <!-- D2 設定 Modal -->
     <div class="modal-overlay" id="modal_d2_settings">
         <div class="modal-content">
             <h2>⚙️ D2 參數設定</h2>
@@ -77,7 +77,7 @@
                 <div class="form-group"><label>👍 每關最多可給讚數</label><input type="number" id="set_d2_maxLikes"></div>
                 <div class="form-group"><label>🪙 一個讚加多少分</label><input type="number" id="set_d2_likePts"></div>
             </div>
-            <hr style="border:1px dashed #7f8c8d; margin:15px 0;">
+            <hr>
             <h3 style="color:#f1c40f; margin-top:0;">🏆 總積分規則設定</h3>
             <div class="form-row">
                 <div class="form-group"><label>第 1 名</label><input type="number" id="set_d2_top1"></div>
@@ -85,7 +85,7 @@
                 <div class="form-group"><label>第 3 名</label><input type="number" id="set_d2_top3"></div>
                 <div class="form-group"><label>基本分</label><input type="number" id="set_d2_base"></div>
             </div>
-            <hr style="border:1px dashed #7f8c8d; margin:15px 0;">
+            <hr>
             <h3 style="color:#f1c40f; margin-top:0;">🎛️ 各關卡屬性設定</h3>
             <div id="d2_station_configs_container"></div>
             <div class="modal-btns">
@@ -95,7 +95,6 @@
         </div>
     </div>
 
-    <!-- D3 設定 Modal -->
     <div class="modal-overlay" id="modal_d3_settings">
         <div class="modal-content">
             <h2>⚙️ D3 參數設定</h2>
@@ -104,7 +103,7 @@
                 <div class="form-group"><label>👍 每關最多可給讚數</label><input type="number" id="set_d3_maxLikes"></div>
                 <div class="form-group"><label>🪙 一個讚加多少分</label><input type="number" id="set_d3_likePts"></div>
             </div>
-            <hr style="border:1px dashed #7f8c8d; margin:15px 0;">
+            <hr>
             <h3 style="color:#f1c40f; margin-top:0;">🏆 名次積分規則設定</h3>
             <div id="d3_rank_scores_container" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;"></div>
             <div class="modal-btns">
@@ -114,27 +113,48 @@
         </div>
     </div>
 
-    <!-- 全域(總分)隊伍設定 Modal -->
-    <div class="modal-overlay" id="modal_score_settings">
-        <div class="modal-content">
-            <h2>⚙️ 總分控台設定</h2>
-            <div class="form-group"><label>👥 營會總隊伍數</label><input type="number" id="set_global_teams"></div>
-            <div class="modal-btns">
-                <button class="btn btn-export" style="flex:1;" id="save_global_settings">💾 儲存</button>
-                <button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_score_settings')">取消</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 匯入賽程 Modal (不變) -->
     <div class="modal-overlay" id="modal_d3_schedule">
         <div class="modal-content">
             <h2>📅 匯入 Excel 賽程表</h2>
             <textarea id="scheduleInput" rows="6" placeholder="從 Excel 複製貼上..."></textarea>
-            <div class="modal-btns">
-                <button class="btn btn-add" style="flex:1;" id="save_d3_schedule">💾 解析儲存</button>
-                <button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_d3_schedule')">取消</button>
+            <div class="modal-btns"><button class="btn btn-add" style="flex:1;" id="save_d3_schedule">💾 解析儲存</button><button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_d3_schedule')">取消</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal_score_settings">
+        <div class="modal-content">
+            <h2>⚙️ 總分控台設定</h2>
+            <div class="form-group"><label>👥 營會總隊伍數</label><input type="number" id="set_global_teams"></div>
+            <div class="modal-btns"><button class="btn btn-export" style="flex:1;" id="save_global_settings">💾 儲存</button><button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_score_settings')">取消</button></div>
+        </div>
+    </div>
+
+    <!-- D2/D3 編輯與新增 Modal -->
+    <div class="modal-overlay" id="modal_add_d2">
+        <div class="modal-content">
+            <h2 id="d2_modal_title">➕ 新增/編輯 D2 紀錄</h2>
+            <input type="hidden" id="d2_edit_id">
+            <div class="form-group"><label>關卡</label><select id="add_d2_st"></select></div>
+            <div class="form-group"><label>隊伍</label><select id="add_d2_team"></select></div>
+            <div class="form-group"><label>數值 (時間請換算為總秒數)</label><input type="number" id="add_d2_val"></div>
+            <div class="modal-btns"><button class="btn btn-add" style="flex:1;" id="save_d2_record">🚀 儲存紀錄</button><button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_add_d2')">取消</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal_add_d3">
+        <div class="modal-content">
+            <h2 id="d3_modal_title">➕ 新增/編輯 D3 紀錄</h2>
+            <input type="hidden" id="d3_edit_id">
+            <div class="form-row">
+                <div class="form-group"><label>關卡</label><select id="add_d3_st"></select></div>
+                <div class="form-group"><label>輪次</label><input type="number" id="add_d3_round" value="1"></div>
             </div>
+            <div class="form-row">
+                <div class="form-group"><label>隊伍 A</label><select id="add_d3_teamA"></select></div>
+                <div class="form-group"><label>隊伍 B</label><select id="add_d3_teamB"></select></div>
+            </div>
+            <div class="form-group"><label style="color:#e74c3c;">獲勝隊伍</label><select id="add_d3_winner"></select></div>
+            <div class="modal-btns"><button class="btn btn-add" style="flex:1;" id="save_d3_record">🚀 儲存紀錄</button><button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_add_d3')">取消</button></div>
         </div>
     </div>
 
@@ -148,44 +168,5 @@
         }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     </script>
-
-    <!-- ➕ D2 手動新增/編輯 Modal -->
-    <div class="modal-overlay" id="modal_add_d2">
-        <div class="modal-content">
-            <h2 id="d2_modal_title">➕ 新增/編輯 D2 紀錄</h2>
-            <input type="hidden" id="d2_edit_id">
-            <div class="form-group"><label>關卡</label><select id="add_d2_st"></select></div>
-            <div class="form-group"><label>隊伍</label><select id="add_d2_team"></select></div>
-            <div class="form-group"><label>數值 (時間請換算為總秒數)</label><input type="number" id="add_d2_val"></div>
-            <div class="modal-btns">
-                <button class="btn btn-add" style="flex:1;" id="save_d2_record">🚀 儲存紀錄</button>
-                <button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_add_d2')">取消</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ➕ D3 手動新增/編輯 Modal -->
-    <div class="modal-overlay" id="modal_add_d3">
-        <div class="modal-content">
-            <h2 id="d3_modal_title">➕ 新增/編輯 D3 紀錄</h2>
-            <input type="hidden" id="d3_edit_id">
-            <div class="form-row">
-                <div class="form-group"><label>關卡</label><select id="add_d3_st"></select></div>
-                <div class="form-group"><label>輪次</label><input type="number" id="add_d3_round" value="1"></div>
-            </div>
-            <div class="form-row">
-                <div class="form-group"><label>隊伍 A</label><select id="add_d3_teamA"></select></div>
-                <div class="form-group"><label>隊伍 B</label><select id="add_d3_teamB"></select></div>
-            </div>
-            <div class="form-group">
-                <label style="color:#e74c3c;">獲勝隊伍</label>
-                <select id="add_d3_winner"></select>
-            </div>
-            <div class="modal-btns">
-                <button class="btn btn-add" style="flex:1;" id="save_d3_record">🚀 儲存紀錄</button>
-                <button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_add_d3')">取消</button>
-            </div>
-        </div>
-    </div>
 </body>
 </html>

@@ -85,3 +85,17 @@ summary { font-weight: bold; color: #3498db; outline: none; }
 /* 總控台縮放為 5 欄 */
 @media (min-width: 1200px) { .monitor-grid { grid-template-columns: repeat(5, 1fr) !important; } }
 #hideOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 3em; font-weight: bold; text-align: center; backdrop-filter: blur(15px); }
+
+/* D2 排行榜：字體絕對置中，獎牌固定在左側 */
+.rank-row {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 6px 0;
+    font-size: 1.1em;
+}
+.rank-icon {
+    position: absolute;
+    left: 15px; /* 把獎牌固定在左側 */
+}

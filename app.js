@@ -21,7 +21,7 @@ function renderBoard() {
     let maxStations = sysSettings.numStations_d2 || 15;
     for (let i = 1; i <= maxStations; i++) {
         let stationRecords = globalRecords.filter(r => r.station === i && !r.isLikeOnly);
-        let conf = sysSettings.d2_configs[i] || { type: 'time', unit: '' };
+        let conf = sysSettings.d2_configs ? (sysSettings.d2_configs[i] || { type: 'time', unit: '' }) : { type: 'time', unit: '' };
         let isTime = conf.type === 'time';
         let maxVal = isTime ? ((sysSettings.d2_maxMin * 60) + 59) : sysSettings.d2_maxScore;
 
@@ -36,12 +36,17 @@ function renderBoard() {
         });
         
         let uniqueRecords = Object.values(teamBest).sort((a, b) => isTime ? (a.val - b.val) : (b.val - a.val));
+        
+        // 🌟 使用新的 rank-row 排版
+        let medals = ["🥇", "🥈", "🥉"];
         let topHtml =[];
         for(let j=0; j<3; j++) {
             if(uniqueRecords[j]) {
                 let display = isTime ? formatTime(uniqueRecords[j].val) : `${uniqueRecords[j].val} ${conf.unit}`;
-                topHtml.push(`${uniqueRecords[j].team} (${display})`);
-            } else topHtml.push("尚未產生");
+                topHtml.push(`<div class="rank-row"><span class="rank-icon">${medals[j]}</span><span class="rank-text">${uniqueRecords[j].team} (${display})</span></div>`);
+            } else {
+                topHtml.push(`<div class="rank-row"><span class="rank-icon">${medals[j]}</span><span class="rank-text" style="color:#aaa;">尚未產生</span></div>`);
+            }
         }
 
         let status = (sysSettings.d2_status && sysSettings.d2_status[i] === 'red') ? 'dot-red' : 'dot-green';
@@ -53,7 +58,7 @@ function renderBoard() {
                     <span>第 ${i} 關</span>
                     <span></span>
                 </div>
-                <p>🥇 ${topHtml[0]}</p><p>🥈 ${topHtml[1]}</p><p>🥉 ${topHtml[2]}</p>
+                ${topHtml[0]}${topHtml[1]}${topHtml[2]}
             </div>
         `;
     }
@@ -71,12 +76,11 @@ function renderBoard() {
 onSnapshot(doc(db, "settings_global", "global"), (docSnap) => {
     if (docSnap.exists()) { 
         sysSettings = { ...sysSettings, ...docSnap.data() }; 
-        hideOverlay.style.display = sysSettings.d2_hidden ? "flex" : "none"; 
+        if(hideOverlay) hideOverlay.style.display = sysSettings.d2_hidden ? "flex" : "none"; 
         renderBoard(); 
     }
 });
 
-// 🌟 改監聽 records_d2
 onSnapshot(collection(db, "records_d2"), (snapshot) => {
     globalRecords = []; snapshot.forEach((doc) => globalRecords.push(doc.data())); renderBoard(); 
 });
