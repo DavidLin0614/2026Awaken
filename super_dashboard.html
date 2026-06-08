@@ -98,15 +98,43 @@
         <div class="monitor-grid" id="d3_monitor"></div>
     </div>
 
-    <!-- 分頁 C：總分控台 -->
+    <!-- 分頁 C：總分控台 (Excel 大表) -->
     <div id="score-panel" class="tab-content">
         <div class="control-bar">
             <button class="btn btn-setting" id="score_setBtn">⚙️ 總隊伍數設定</button>
             <button class="btn btn-add" id="score_addBonusBtn">➕ 手動新增各隊加/扣分</button>
+            <button class="btn btn-danger" onclick="window.clearBonus()">💣 一鍵清除手動加分</button>
         </div>
-        <div class="glass-card" style="padding: 20px;">
-            <h3 style="margin-top:0;">📊 各隊總積分詳細戰報</h3>
-            <div id="score_summary" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:15px;"></div>
+        
+        <div class="glass-card" style="padding: 15px; width: 100%; overflow: hidden;">
+            <h3 style="margin-top:0; color:#f1c40f;">📊 營會總積分矩陣大表 (可左右滑動)</h3>
+            <div class="table-container">
+                <table id="excelTable">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">隊伍</th>
+                            <th rowspan="2" class="col-total">總合</th>
+                            <th colspan="6">7/2 得分</th>
+                            <th colspan="7">7/3 得分</th>
+                            <th colspan="6">7/4 得分</th>
+                            <th colspan="6">7/5 得分</th>
+                        </tr>
+                        <tr>
+                            <!-- 7/2 -->
+                            <th>開幕式</th><th>大破冰</th><th>小隊時間</th><th>晚會</th><th>講員額外</th><th>額外增減</th>
+                            <!-- 7/3 -->
+                            <th>早場</th><th>大破冰</th><th>晚會</th><th>NPC加分</th><th class="col-d2d3">大地(D2)</th><th>講員額外</th><th>額外增減</th>
+                            <!-- 7/4 -->
+                            <th>下午場</th><th>晚場</th><th>NPC</th><th class="col-d2d3">大地(D3)</th><th>講員額外</th><th>額外增減</th>
+                            <!-- 7/5 -->
+                            <th>早場</th><th>小隊任務</th><th>見證</th><th>講員</th><th>講員額外</th><th>額外增減</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- 數據自動生成 -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
