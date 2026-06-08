@@ -212,12 +212,47 @@
         </div>
     </div>
 
-    <!-- ➕ 額外加分 Modal (放在檔案最下方的 Modal 區塊內) -->
+    <!-- ➕ 額外加分 Modal (對齊 Excel 大表分類) -->
     <div class="modal-overlay" id="modal_add_bonus">
         <div class="modal-content">
             <h2>➕ 手動額外加/扣分</h2>
             <div class="form-group"><label>選擇隊伍</label><select id="add_bonus_team"></select></div>
-            <div class="form-group"><label>類別/事由 (例如：晚會、大破冰)</label><input type="text" id="add_bonus_reason" placeholder="請輸入加分項目"></div>
+            <div class="form-group">
+                <label>選擇加分欄位 (對應大表)</label>
+                <select id="add_bonus_reason" style="font-weight:bold; color:#f1c40f;">
+                    <optgroup label="7/2 得分">
+                        <option value="7/2_開幕式">開幕式</option>
+                        <option value="7/2_大破冰">大破冰</option>
+                        <option value="7/2_小隊時間">小隊時間</option>
+                        <option value="7/2_晚會">晚會</option>
+                        <option value="7/2_講員額外">講員額外</option>
+                        <option value="7/2_額外增減">額外增減</option>
+                    </optgroup>
+                    <optgroup label="7/3 得分">
+                        <option value="7/3_早場">早場</option>
+                        <option value="7/3_大破冰">大破冰</option>
+                        <option value="7/3_晚會">晚會</option>
+                        <option value="7/3_NPC加分">NPC加分</option>
+                        <option value="7/3_講員額外">講員額外</option>
+                        <option value="7/3_額外增減">額外增減</option>
+                    </optgroup>
+                    <optgroup label="7/4 得分">
+                        <option value="7/4_下午場">下午場</option>
+                        <option value="7/4_晚場">晚場</option>
+                        <option value="7/4_NPC">NPC</option>
+                        <option value="7/4_講員額外">講員額外</option>
+                        <option value="7/4_額外增減">額外增減</option>
+                    </optgroup>
+                    <optgroup label="7/5 得分">
+                        <option value="7/5_早場">早場</option>
+                        <option value="7/5_小隊任務">小隊任務</option>
+                        <option value="7/5_見證">見證</option>
+                        <option value="7/5_講員">講員</option>
+                        <option value="7/5_講員額外">講員額外</option>
+                        <option value="7/5_額外增減">額外增減</option>
+                    </optgroup>
+                </select>
+            </div>
             <div class="form-group"><label>分數 (扣分請加負號，如 -50)</label><input type="number" id="add_bonus_val"></div>
             <div class="modal-btns">
                 <button class="btn btn-add" style="flex:1;" id="save_bonus_record">🚀 確認給分</button>

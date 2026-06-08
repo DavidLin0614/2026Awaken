@@ -3,52 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>牧者 NPC 加分站</title>
+    <title>NPC 加分站</title>
     <link rel="stylesheet" href="style.css">
     <style>
         body { text-align: center; }
         .container { background: rgba(15, 20, 30, 0.9); padding: 20px; border-radius: 12px; max-width: 500px; margin: 0 auto; display: none; box-shadow: 0 8px 16px rgba(0,0,0,0.6); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15); }
         .npc-badge { background-color: #8e44ad; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-bottom: 15px; display: inline-block; }
-        .tier-panel { background: rgba(0,0,0,0.5); border-radius: 8px; padding: 15px; text-align: left; margin-bottom: 20px; }
-        .tier-row { display: flex; align-items: center; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;}
-        .tier-label { font-size: 1.8em; width: 45px; text-align: center; }
-        .tier-teams { flex: 1; line-height: 1.5; font-size: 0.9em; }
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 20, 30, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(10px); }
         #loginOverlay input { width: 80%; max-width: 300px; text-align: center; margin-bottom: 15px; padding: 12px; font-size: 1.1em; border-radius: 5px; border: none; }
-        .detail-card { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 0.85em; }
+        .simple-row { display: flex; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 10px 15px; margin-bottom: 5px; border-radius: 5px; font-size: 1.1em; }
     </style>
 </head>
 <body>
     <div id="loginOverlay">
-        <h2>👋 歡迎牧者 / NPC</h2>
+        <h2>👋 歡迎 NPC</h2>
         <input type="text" id="npcNameInput" placeholder="請輸入您的名稱">
-        <button class="btn btn-score" id="loginBtn" style="padding: 12px 30px; font-size: 1.1em;">進入加分系統</button>
+        <button class="btn btn-score" id="loginBtn" style="padding: 12px 30px; font-size: 1.1em;">進入</button>
     </div>
 
     <div class="container" id="mainContainer">
         <h2 style="margin-top:0; color:#8e44ad;">🌟 神秘 NPC 加分站</h2>
         <div class="npc-badge" id="npcDisplay">身分：未知</div>
-        
-        <div class="tier-panel">
-            <h3 style="margin-top:0; color:#f1c40f; text-align:center;">📊 即時戰況分析 (由強至弱)</h3>
-            <div class="tier-row"><div class="tier-label">🌟</div><div class="tier-teams" id="tier1"></div></div>
-            <div class="tier-row"><div class="tier-label">😊</div><div class="tier-teams" id="tier2"></div></div>
-            <div class="tier-row"><div class="tier-label">💦</div><div class="tier-teams" id="tier3"></div></div>
-            <div class="tier-row" style="border:none;"><div class="tier-label">🥺</div><div class="tier-teams" id="tier4"></div></div>
-            <p style="font-size:0.8em; color:#aaa; margin: 10px 0 0 0; text-align:center;">(請多多支援 💦 與 🥺 的隊伍喔！)</p>
-        </div>
 
         <div class="form-row" style="margin-bottom:15px;">
-            <div class="form-group" style="margin-bottom:0;"><label>選擇加分隊伍</label><select id="teamSelect"></select></div>
-            <div class="form-group" style="margin-bottom:0;"><label>事由 (如: 晚會)</label><input type="text" id="bonusReason" value="NPC加分"></div>
+            <div class="form-group" style="margin-bottom:0;"><label>隊伍</label><select id="teamSelect"></select></div>
+            <div class="form-group" style="margin-bottom:0;"><label>分數</label><input type="number" id="bonusScoreInput" placeholder="數值"></div>
         </div>
-        <div class="form-group"><label>給予分數</label><input type="number" id="bonusScoreInput" placeholder="請輸入數值"></div>
+        <button class="btn btn-score" id="submitBtn" style="width:100%; padding:15px; font-size:1.2em; margin-bottom: 20px;">送出魔法加分 ✨</button>
 
-        <button class="btn btn-score" id="submitBtn" style="width:100%; padding:15px; font-size:1.2em;">送出魔法加分 ✨</button>
-
-        <hr style="border-top:1px solid rgba(255,255,255,0.2); margin:20px 0;">
-        <h3 style="color:#f1c40f; margin-top:0;">🔍 各隊詳細戰力表</h3>
-        <div id="detailedScores" style="text-align:left;"></div>
+        <h3 style="color:#f1c40f; text-align:left;">🏆 目前各隊總分排行</h3>
+        <div id="simpleLeaderboard" style="text-align:left;"></div>
     </div>
 
     <script type="module" src="npc.js"></script>
