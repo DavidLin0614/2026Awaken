@@ -15,8 +15,16 @@ function formatTime(totalSeconds) { const m = Math.floor(totalSeconds / 60); con
 function renderBoard() {
     const board = document.getElementById("board"); board.innerHTML = ""; 
     let teamLikes = {}; 
+    
+    // 🌟 嚴格只初始化到設定的隊伍數
     for(let i=1; i<=sysSettings.numTeams; i++) teamLikes[`第${i}隊`] = 0;
-    globalRecords.forEach(r => { if(!r.isNPC && r.likes > 0) teamLikes[r.team] += r.likes; });
+    
+    globalRecords.forEach(r => { 
+        // 🌟 嚴格過濾：只採計設定內的隊伍 (無視第15隊的假資料)
+        if(!r.isNPC && r.likes > 0 && teamLikes[r.team] !== undefined) {
+            teamLikes[r.team] += r.likes; 
+        }
+    });
 
     let maxStations = sysSettings.numStations_d2 || 15;
     for (let i = 1; i <= maxStations; i++) {
@@ -27,6 +35,10 @@ function renderBoard() {
 
         let teamBest = {};
         stationRecords.forEach(r => {
+            // 🌟 嚴格過濾：超過設定隊伍數的資料直接無視
+            let tNum = parseInt(r.team.replace(/[^0-9]/g, ''));
+            if (tNum > sysSettings.numTeams) return;
+
             if (r.val > maxVal || r.val < 0) return;
             if (!teamBest[r.team]) teamBest[r.team] = r;
             else {
@@ -37,7 +49,6 @@ function renderBoard() {
         
         let uniqueRecords = Object.values(teamBest).sort((a, b) => isTime ? (a.val - b.val) : (b.val - a.val));
         
-        // 🌟 使用新的 rank-row 排版
         let medals = ["🥇", "🥈", "🥉"];
         let topHtml =[];
         for(let j=0; j<3; j++) {
