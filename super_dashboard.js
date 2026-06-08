@@ -193,7 +193,7 @@ window.runCornerTest = async () => {
     console.log("🚀 開始灌入真實 Corner Test 測試資料...");
 
     // 1. D2
-    for(let st=1; st<=5; st++) {
+    for(let st=1; st<=14; st++) {
         for(let t=1; t<=15; t++) {
             await addDoc(collection(db, "records_d2"), {
                 station: st, team: `第${t}隊`, val: Math.floor(Math.random()*300 + 60),
@@ -204,7 +204,7 @@ window.runCornerTest = async () => {
     console.log("✅ D2 資料灌入完成");
 
     // 2. D3
-    for(let round=1; round<=3; round++) {
+    for(let round=1; round<=6; round++) {
         for(let st=1; st<=7; st++) {
             let tA = `第${st*2 - 1}隊`, tB = `第${st*2}隊`;
             let winner = Math.random() > 0.5 ? tA : tB;
