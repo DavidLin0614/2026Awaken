@@ -409,3 +409,14 @@ summary {
     display: none;
     /* Chrome, Safari, Opera 徹底隱藏滾動條 */
 }
+
+details .record-list {
+    max-height: 110px; 
+    overflow-y: auto;
+    -ms-overflow-style: none;  /* IE 和 Edge 隱藏滾動條 */
+    scrollbar-width: none;  /* Firefox 隱藏滾動條 */
+}
+details .record-list::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera 隱藏滾動條 */
+}
+details { margin-top: 8px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 5px; }

@@ -55,16 +55,16 @@ onSnapshot(doc(db, "settings_global", "global"), (docSnap) => {
 
         // --- 替換這一段 ---
         // 確保 d2_configs 存在，才去抓裡面的資料，否則給預設值
-        currentConf = (sysSettings.d2_configs && sysSettings.d2_configs[currentStation])
-            ? sysSettings.d2_configs[currentStation]
-            : { type: 'time', unit: '' };
+         currentConf = (sysSettings.d2_configs && sysSettings.d2_configs[currentStation]) 
+                      ? sysSettings.d2_configs[currentStation] 
+                      : { type: 'time', unit: '' };
 
-        document.getElementById('stationDisplay').innerText = `第 ${currentStation} 關 (${currentConf.type === 'time' ? '⏱️計時' : '🎯計分'})`;
+        document.getElementById('stationDisplay').innerText = `第 ${currentStation} 關 (${currentConf.type==='time'?'⏱️計時':'🎯計分'})`;
         if (currentConf.type === 'time') {
             document.getElementById('timeInputGroup').style.display = "block"; document.getElementById('scoreInputGroup').style.display = "none";
         } else {
             document.getElementById('timeInputGroup').style.display = "none"; document.getElementById('scoreInputGroup').style.display = "block";
-            document.getElementById('scoreLabel').innerText = `獲得數值 (單位: ${currentConf.unit || ''}):`;
+            document.getElementById('scoreLabel').innerText = `獲得數值 (單位: ${currentConf.unit||''}):`;
         }
         // --- 替換到這裡 ---
     }

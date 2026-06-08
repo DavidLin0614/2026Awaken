@@ -69,97 +69,90 @@ function renderD3Monitor() {
     }
 }
 
-function renderBonusMonitor() {
-    const container = document.getElementById('bonus_monitor'); container.innerHTML = "";
-    for (let i = 1; i <= (sysSettings.numTeams || 15); i++) {
-        let t = `第${i}隊`;
-        let totalBonus = recordsBonus.filter(r => r.team === t).reduce((sum, r) => sum + r.val, 0);
-        container.innerHTML += `<div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:5px; display:flex; justify-content:space-between; align-items:center;"><b>${t}</b><span style="color:#2ecc71;">+${totalBonus} 分</span><button class="btn btn-add" style="padding:5px 10px;" onclick="window.addBonus('${t}')">加分</button></div>`;
-    }
-}
+//function renderBonusMonitor() {
+//    const container = document.getElementById('bonus_monitor'); container.innerHTML = "";
+//    for (let i = 1; i <= (sysSettings.numTeams || 15); i++) {
+//        let t = `第${i}隊`;
+//        let totalBonus = recordsBonus.filter(r => r.team === t).reduce((sum, r) => sum + r.val, 0);
+//        container.innerHTML += `<div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:5px; display:flex; justify-content:space-between; align-items:center;"><b>${t}</b><span style="color:#2ecc71;">+${totalBonus} 分</span><button class="btn btn-add" style="padding:5px 10px;" onclick="window.addBonus('${t}')">加分</button></div>`;
+//    }
+//}
 
 // ==========================================
 // 🏆 計算總分摘要 (超級核心邏輯)
 // ==========================================
-function updateScoreSummary() {
+window.updateScoreSummary = function() {
     const summary = document.getElementById('score_summary');
-    if (!summary) return;
+    if(!summary) return;
     summary.innerHTML = "";
-
+    
     let teams = sysSettings.numTeams || 15;
     let scores = {};
-    for (let i = 1; i <= teams; i++) scores[`第${i}隊`] = { total: 0, d2: 0, d3: 0, bonus: 0, likes: 0 };
+    for(let i=1; i<=teams; i++) scores[`第${i}隊`] = { total: 0, d2: 0, d3: 0, bonus: 0, likes: 0, d3Wins: 0, d3Losses: 0, bonusDetails: [] };
 
-    // 1. 計算 D2 成績
-    let d2Rules = sysSettings.d2_rules || { top1: 300, top2: 200, top3: 100, base: 50 };
+    let d2Rules = sysSettings.d2_rules || { top1:300, top2:200, top3:100, base:50 };
     let d2LikePts = sysSettings.d2_likePts || 10;
-
-    for (let i = 1; i <= (sysSettings.numStations_d2 || 15); i++) {
-        let conf = sysSettings.d2_configs ? sysSettings.d2_configs[i] : { type: 'time' };
-        let maxVal = (conf.type === 'time') ? ((sysSettings.d2_maxMin || 59) * 60 + 59) : (sysSettings.d2_maxScore || 999);
+    
+    for(let i=1; i<= (sysSettings.numStations_d2 || 15); i++) {
+        let conf = sysSettings.d2_configs ? sysSettings.d2_configs[i] : { type:'time' };
+        let maxVal = (conf.type === 'time') ? ((sysSettings.d2_maxMin||59) * 60 + 59) : (sysSettings.d2_maxScore||999);
         let stRecs = recordsD2.filter(r => r.station === i && !r.isLikeOnly && r.val >= 0 && r.val <= maxVal);
-
-        stRecs.sort((a, b) => conf.type === 'time' ? a.val - b.val : b.val - a.val);
-
+        stRecs.sort((a,b) => conf.type === 'time' ? a.val - b.val : b.val - a.val);
         stRecs.forEach((r, idx) => {
-            if (!scores[r.team]) return;
-            if (idx === 0) scores[r.team].d2 += d2Rules.top1;
-            else if (idx === 1) scores[r.team].d2 += d2Rules.top2;
-            else if (idx === 2) scores[r.team].d2 += d2Rules.top3;
+            if(!scores[r.team]) return;
+            if(idx === 0) scores[r.team].d2 += d2Rules.top1;
+            else if(idx === 1) scores[r.team].d2 += d2Rules.top2;
+            else if(idx === 2) scores[r.team].d2 += d2Rules.top3;
             else scores[r.team].d2 += d2Rules.base;
         });
     }
+    recordsD2.forEach(r => { if(scores[r.team] && r.likes) scores[r.team].likes += (r.likes * d2LikePts); });
 
-    // 計算 D2 讚數分
-    recordsD2.forEach(r => { if (scores[r.team] && r.likes) scores[r.team].likes += (r.likes * d2LikePts); });
-
-    // 2. 計算 D3 成績
     let d3LikePts = sysSettings.d3_likePts || 10;
-    let d3Stats = {};
-    for (let i = 1; i <= teams; i++) d3Stats[`第${i}隊`] = { wins: 0, losses: 0 };
-
     recordsD3.forEach(r => {
-        if (d3Stats[r.winner]) d3Stats[r.winner].wins++;
-        if (d3Stats[r.loser]) d3Stats[r.loser].losses++;
-        if (scores[r.teamA] && r.likesA) scores[r.teamA].likes += (r.likesA * d3LikePts);
-        if (scores[r.teamB] && r.likesB) scores[r.teamB].likes += (r.likesB * d3LikePts);
+        if(scores[r.winner]) scores[r.winner].d3Wins++;
+        if(scores[r.loser]) scores[r.loser].d3Losses++;
+        if(scores[r.teamA] && r.likesA) scores[r.teamA].likes += (r.likesA * d3LikePts);
+        if(scores[r.teamB] && r.likesB) scores[r.teamB].likes += (r.likesB * d3LikePts);
     });
 
-    let d3Ranked = Object.keys(d3Stats).map(t => ({ team: t, ...d3Stats[t] })).sort((a, b) => b.wins !== a.wins ? b.wins - a.wins : a.losses - b.losses);
+    let d3Ranked = Object.keys(scores).map(t => ({ team: t, ...scores[t] })).sort((a,b) => b.d3Wins !== a.d3Wins ? b.d3Wins - a.d3Wins : a.d3Losses - b.d3Losses);
     let d3RankScores = sysSettings.d3_rankScores || {};
     let currRank = 1;
     d3Ranked.forEach((item, idx) => {
-        if (idx > 0 && item.wins === d3Ranked[idx - 1].wins && item.losses === d3Ranked[idx - 1].losses) item.rank = d3Ranked[idx - 1].rank;
+        if (idx > 0 && item.d3Wins === d3Ranked[idx-1].d3Wins && item.d3Losses === d3Ranked[idx-1].d3Losses) item.rank = d3Ranked[idx-1].rank;
         else { currRank = idx + 1; item.rank = currRank; }
-        if (scores[item.team]) scores[item.team].d3 += (d3RankScores[item.rank] || 0);
+        if(scores[item.team]) scores[item.team].d3 += (d3RankScores[item.rank] || 0);
     });
 
-    // 3. 計算牧者手動加分
-    recordsBonus.forEach(r => { if (scores[r.team]) scores[r.team].bonus += r.val; });
-
-    // 4. 結算總分並排序
-    Object.keys(scores).forEach(t => {
-        let s = scores[t];
-        s.total = s.d2 + s.d3 + s.likes + s.bonus;
+    // 紀錄各隊的額外加分明細
+    recordsBonus.forEach(r => { 
+        if(scores[r.team]) {
+            scores[r.team].bonus += r.val; 
+            scores[r.team].bonusDetails.push(`${r.reason}: ${r.val > 0 ? '+'+r.val : r.val}`);
+        }
     });
 
-    let finalRanking = Object.keys(scores).map(t => ({ team: t, ...scores[t] })).sort((a, b) => b.total - a.total);
-
-    // 5. 渲染到畫面上
+    Object.keys(scores).forEach(t => { scores[t].total = scores[t].d2 + scores[t].d3 + scores[t].likes + scores[t].bonus; });
+    let finalRanking = Object.keys(scores).map(t => ({ team: t, ...scores[t] })).sort((a,b) => b.total - a.total);
+    
     finalRanking.forEach((item, idx) => {
-        let rankBadge = idx < 3 ? ['🥇', '🥈', '🥉'][idx] : `第${idx + 1}名`;
+        let rankBadge = idx < 3 ? ['🥇','🥈','🥉'][idx] : `第${idx+1}名`;
+        let detailStr = item.bonusDetails.length > 0 ? `<br>📝 項目: ${item.bonusDetails.join(', ')}` : "";
         summary.innerHTML += `
             <div class="glass-card" style="padding:15px; text-align:left;">
-                <div style="font-size:1.2em; border-bottom:1px solid #555; padding-bottom:5px; margin-bottom:5px;">
+                <div style="font-size:1.3em; border-bottom:1px solid #555; padding-bottom:5px; margin-bottom:8px;">
                     ${rankBadge} <b>${item.team}</b> <span style="float:right; color:#f1c40f;">${item.total} 分</span>
                 </div>
-                <div style="font-size:0.8em; color:#aaa; line-height:1.5;">
-                    D2積分: ${item.d2} | D3積分: ${item.d3}<br>
-                    按讚加分: ${item.likes} | 額外加分: ${item.bonus}
+                <div style="font-size:0.85em; color:#ccc; line-height:1.6;">
+                    🏃 D2積分: <b style="color:white;">${item.d2}</b><br>
+                    ⚔️ D3積分: <b style="color:white;">${item.d3}</b> <small>(${item.d3Wins}勝${item.d3Losses}敗)</small><br>
+                    👍 讚數分: <b style="color:white;">${item.likes}</b><br>
+                    ✨ 手動分: <b style="color:white;">${item.bonus}</b> ${detailStr}
                 </div>
             </div>`;
     });
-}
+};
 
 window.delD2 = async (id) => { if (confirm("刪除？")) await deleteDoc(doc(db, "records_d2", id)); };
 window.delD3 = async (id) => { if (confirm("刪除？")) await deleteDoc(doc(db, "records_d3", id)); };
@@ -365,3 +358,22 @@ window.clearBonus = async () => {
         alert("✅ 手動加分已清空");
     }
 };
+
+document.getElementById('score_addBonusBtn').addEventListener('click', () => {
+    let tSel = document.getElementById('add_bonus_team'); tSel.innerHTML = "";
+    for(let i=1; i<=(sysSettings.numTeams||15); i++) tSel.innerHTML += `<option value="第${i}隊">第 ${i} 隊</option>`;
+    document.getElementById('add_bonus_reason').value = "";
+    document.getElementById('add_bonus_val').value = "";
+    document.getElementById('modal_add_bonus').style.display = 'flex';
+});
+
+document.getElementById('save_bonus_record').addEventListener('click', async () => {
+    let team = document.getElementById('add_bonus_team').value;
+    let reason = document.getElementById('add_bonus_reason').value.trim() || "手動調整";
+    let val = parseInt(document.getElementById('add_bonus_val').value);
+    if(isNaN(val)) return alert("請輸入正確數值！");
+    
+    await addDoc(collection(db, "records_bonus"), { team, reason, val, timestamp: Date.now() });
+    document.getElementById('modal_add_bonus').style.display = 'none';
+    alert("✅ 給分成功！");
+});

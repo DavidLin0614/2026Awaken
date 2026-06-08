@@ -98,16 +98,15 @@
         <div class="monitor-grid" id="d3_monitor"></div>
     </div>
 
-    <!-- 分頁 C：總分 -->
+    <!-- 分頁 C：總分控台 -->
     <div id="score-panel" class="tab-content">
         <div class="control-bar">
-            <button class="btn btn-setting" id="score_setBtn">⚙️ 全域系統設定</button>
-            <button class="btn btn-danger" onclick="window.clearBonus()">💣 一鍵清除手動加分</button>
+            <button class="btn btn-setting" id="score_setBtn">⚙️ 總隊伍數設定</button>
+            <button class="btn btn-add" id="score_addBonusBtn">➕ 手動新增各隊加/扣分</button>
         </div>
         <div class="glass-card" style="padding: 20px;">
-            <h3 style="margin-top:0;">✨ 牧者 / 手動額外加分區</h3>
-            <div id="bonus_monitor"
-                style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px;"></div>
+            <h3 style="margin-top:0;">📊 各隊總積分詳細戰報</h3>
+            <div id="score_summary" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:15px;"></div>
         </div>
     </div>
 
@@ -210,6 +209,20 @@
             <div class="modal-btns"><button class="btn btn-add" style="flex:1;" id="save_d3_record">🚀
                     儲存紀錄</button><button class="btn btn-danger" style="flex:1;"
                     onclick="closeModal('modal_add_d3')">取消</button></div>
+        </div>
+    </div>
+
+    <!-- ➕ 額外加分 Modal (放在檔案最下方的 Modal 區塊內) -->
+    <div class="modal-overlay" id="modal_add_bonus">
+        <div class="modal-content">
+            <h2>➕ 手動額外加/扣分</h2>
+            <div class="form-group"><label>選擇隊伍</label><select id="add_bonus_team"></select></div>
+            <div class="form-group"><label>類別/事由 (例如：晚會、大破冰)</label><input type="text" id="add_bonus_reason" placeholder="請輸入加分項目"></div>
+            <div class="form-group"><label>分數 (扣分請加負號，如 -50)</label><input type="number" id="add_bonus_val"></div>
+            <div class="modal-btns">
+                <button class="btn btn-add" style="flex:1;" id="save_bonus_record">🚀 確認給分</button>
+                <button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_add_bonus')">取消</button>
+            </div>
         </div>
     </div>
 
