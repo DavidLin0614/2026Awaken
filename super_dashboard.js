@@ -69,14 +69,14 @@ function renderD3Monitor() {
     }
 }
 
-//function renderBonusMonitor() {
-//    const container = document.getElementById('bonus_monitor'); container.innerHTML = "";
-//    for (let i = 1; i <= (sysSettings.numTeams || 15); i++) {
-//        let t = `第${i}隊`;
-//        let totalBonus = recordsBonus.filter(r => r.team === t).reduce((sum, r) => sum + r.val, 0);
-//        container.innerHTML += `<div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:5px; display:flex; justify-content:space-between; align-items:center;"><b>${t}</b><span style="color:#2ecc71;">+${totalBonus} 分</span><button class="btn btn-add" style="padding:5px 10px;" onclick="window.addBonus('${t}')">加分</button></div>`;
-//    }
-//}
+function renderBonusMonitor() {
+    const container = document.getElementById('bonus_monitor'); container.innerHTML = "";
+    for (let i = 1; i <= (sysSettings.numTeams || 15); i++) {
+        let t = `第${i}隊`;
+        let totalBonus = recordsBonus.filter(r => r.team === t).reduce((sum, r) => sum + r.val, 0);
+        container.innerHTML += `<div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:5px; display:flex; justify-content:space-between; align-items:center;"><b>${t}</b><span style="color:#2ecc71;">+${totalBonus} 分</span><button class="btn btn-add" style="padding:5px 10px;" onclick="window.addBonus('${t}')">加分</button></div>`;
+    }
+}
 
 // ==========================================
 // 🏆 計算總分並渲染 Excel 矩陣大表
