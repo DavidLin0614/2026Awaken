@@ -15,16 +15,25 @@ lockOverlay.innerHTML = "🔒<br>輸入已鎖定<br><span style='font-size:0.5em
 document.body.appendChild(lockOverlay);
 
 // 更新輪次與賽程
+// 🌟 更新輪次，並且推送到資料庫給總控台看
 function updateRoundUI() {
     document.getElementById('roundText').innerText = `第 ${currentRound} 輪`;
-    likesA = 0; likesB = 0; updateLikeUI(); // 換輪次清空讚數
-
-    if (sysSettings && sysSettings.schedule && sysSettings.schedule[currentRound] && sysSettings.schedule[currentRound][currentStation]) {
+    likesA = 0; likesB = 0; 
+    updateLikeUI(); 
+    
+    if(sysSettings && sysSettings.schedule && sysSettings.schedule[currentRound] && sysSettings.schedule[currentRound][currentStation]) {
         const m = sysSettings.schedule[currentRound][currentStation];
         document.getElementById('teamASelect').value = m.a;
         document.getElementById('teamBSelect').value = m.b;
     }
     updateWinnerSelect();
+
+    // 🌟 將關主目前的輪次推送到資料庫
+    if(sysSettings) {
+        let newRounds = { ...(sysSettings.d3_currRounds || {}) };
+        newRounds[currentStation] = currentRound;
+        setDoc(doc(db, "settings_global", "global"), { d3_currRounds: newRounds }, { merge: true }).catch(e=>{});
+    }
 }
 
 // 更新按讚UI與防呆限制
@@ -116,7 +125,7 @@ onSnapshot(collection(db, "records_d3"), (snapshot) => {
 
     stRecs.forEach(r => {
         const item = document.createElement('div'); item.className = 'record-item';
-        item.innerHTML = `<span>[輪${r.round}] <b>${r.winner} 勝</b><br><small style="color:#aaa;">(👍${r.likesA} vs 👍${r.likesB})</small></span><button class="btn btn-danger" style="padding:5px;" data-id="${r.id}">刪除</button>`;
+         item.innerHTML = `<span>[輪${r.round}] <b>${r.teamA} VS ${r.teamB}</b><br><span style="color:#e74c3c;">👉 ${r.winner} 勝</span> <small style="color:#aaa;">(👍A:${r.likesA} B:${r.likesB})</small></span><button class="delete-btn" data-id="${r.id}">刪除</button>`;
         board.appendChild(item);
     });
     document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', async (e) => {

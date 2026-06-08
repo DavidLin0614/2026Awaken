@@ -54,8 +54,7 @@ function renderD3Monitor() {
         let status = (sysSettings.d3_status && sysSettings.d3_status[i]) || 'green';
         let recs = recordsD3.filter(r => r.station === i).sort((a, b) => b.createdAt - a.createdAt);
 
-        let currentRound = 1;
-        if (recs.length > 0) currentRound = Math.max(...recs.map(r => r.round || 1)) + 1;
+        let currentRound = (sysSettings.d3_currRounds && sysSettings.d3_currRounds[i]) ? sysSettings.d3_currRounds[i] : 1;
         let currentTeams = "尚未分配";
         if (sysSettings.schedule && sysSettings.schedule[currentRound] && sysSettings.schedule[currentRound][i]) {
             currentTeams = `${sysSettings.schedule[currentRound][i].a} VS ${sysSettings.schedule[currentRound][i].b}`;
