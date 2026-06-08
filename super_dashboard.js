@@ -146,11 +146,16 @@ window.updateScoreSummary = function() {
     });
 
     // 4. 改為依照隊伍編號 (1~15) 排序，不再依照總分排序
-    let finalRanking = Object.keys(scores).map(t => ({ team: t, ...scores[t] })).sort((a,b) => {
+    let finalRanking = Object.keys(scores).map(t => {
+        let s = scores[t];
+        // 🌟 補回這行：把所有欄位加總起來！
+        s.total = cols.reduce((sum, c) => sum + (s[c] || 0), 0);
+        return { team: t, ...s };
+    }).sort((a,b) => {
         let numA = parseInt(a.team.replace(/[^0-9]/g, ''));
         let numB = parseInt(b.team.replace(/[^0-9]/g, ''));
         return numA - numB;
-    }); 
+    });
 
     // 5. 渲染 Table
     finalRanking.forEach(s => {
