@@ -3,7 +3,7 @@ import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc
 
 const firebaseConfig = { apiKey: "AIzaSyBo5iMRonG0rFu6ZuIBJFXzwnWF9xiAKgQ", authDomain: "awaken-c5fca.firebaseapp.com", projectId: "awaken-c5fca", storageBucket: "awaken-c5fca.firebasestorage.app" };
 const app = initializeApp(firebaseConfig); const db = getFirestore(app);
-const urlParams = new URLSearchParams(window.location.search); const currentStation = parseInt(urlParams.get('station')) || 1; 
+const urlParams = new URLSearchParams(window.location.search); const currentStation = parseInt(urlParams.get('station')) || 1;
 
 let sysSettings = null, currentConf = null, isOccupied = false, sessionLikes = 0;
 
@@ -17,7 +17,7 @@ function updateLikeUI() {
     const btn = document.getElementById('instantLikeBtn');
     // 🌟 正確抓取 d2_maxLikes
     const max = (sysSettings && sysSettings.d2_maxLikes) ? sysSettings.d2_maxLikes : 3;
-    
+
     btn.innerHTML = `送出 👍<br><small>(${currentSessionLikes}/${max})</small>`;
     btn.disabled = (!isOccupied || currentSessionLikes >= max);
     btn.style.background = (btn.disabled) ? "#bdc3c7" : "#f1c40f";
@@ -28,7 +28,7 @@ document.getElementById('statusToggleBtn').addEventListener('click', async () =>
     let newStatus = { ...sysSettings.d2_status };
     newStatus[currentStation] = isOccupied ? 'red' : 'green';
     document.getElementById('statusToggleBtn').innerText = "更新中...";
-    if (isOccupied) sessionLikes = 0; 
+    if (isOccupied) sessionLikes = 0;
     await updateDoc(doc(db, "settings_global", "global"), { d2_status: newStatus });
 });
 
@@ -41,7 +41,7 @@ onSnapshot(doc(db, "settings_global", "global"), (docSnap) => {
     if (docSnap.exists()) {
         sysSettings = docSnap.data();
         lockOverlay.style.display = sysSettings.d2_locked ? "flex" : "none";
-        
+
         isOccupied = (sysSettings.d2_status && sysSettings.d2_status[currentStation] === 'red');
         const sBtn = document.getElementById('statusToggleBtn');
         sBtn.className = isOccupied ? "status-btn status-red" : "status-btn status-green";
@@ -53,41 +53,47 @@ onSnapshot(doc(db, "settings_global", "global"), (docSnap) => {
         for (let i = 1; i <= (sysSettings.numTeams || 15); i++) tSelect.innerHTML += `<option value="第${i}隊">第 ${i} 隊</option>`;
         if (currSel) tSelect.value = currSel;
 
-        currentConf = sysSettings.d2_configs ? sysSettings.d2_configs[currentStation] : { type: 'time', unit: '' };
-        document.getElementById('stationDisplay').innerText = `第 ${currentStation} 關 (${currentConf.type==='time'?'⏱️':'🎯'})`;
+        // --- 替換這一段 ---
+        // 確保 d2_configs 存在，才去抓裡面的資料，否則給預設值
+        currentConf = (sysSettings.d2_configs && sysSettings.d2_configs[currentStation])
+            ? sysSettings.d2_configs[currentStation]
+            : { type: 'time', unit: '' };
+
+        document.getElementById('stationDisplay').innerText = `第 ${currentStation} 關 (${currentConf.type === 'time' ? '⏱️計時' : '🎯計分'})`;
         if (currentConf.type === 'time') {
             document.getElementById('timeInputGroup').style.display = "block"; document.getElementById('scoreInputGroup').style.display = "none";
         } else {
             document.getElementById('timeInputGroup').style.display = "none"; document.getElementById('scoreInputGroup').style.display = "block";
-            document.getElementById('scoreLabel').innerText = `獲得數值 (單位: ${currentConf.unit||''}):`;
+            document.getElementById('scoreLabel').innerText = `獲得數值 (單位: ${currentConf.unit || ''}):`;
         }
+        // --- 替換到這裡 ---
     }
 });
 
 onSnapshot(collection(db, "records_d2"), (snapshot) => {
-    const board = document.getElementById('stationLeaderboard'); board.innerHTML = ""; 
-    let records = []; snapshot.forEach(d => records.push({id: d.id, ...d.data()}));
-    
-    let stRecs = records.filter(r => r.station === currentStation).sort((a,b) => b.createdAt - a.createdAt);
-    if(stRecs.length === 0) { board.innerHTML = "<p style='color:#888;'>尚無成績</p>"; return; }
-    
+    const board = document.getElementById('stationLeaderboard'); board.innerHTML = "";
+    let records = []; snapshot.forEach(d => records.push({ id: d.id, ...d.data() }));
+
+    let stRecs = records.filter(r => r.station === currentStation).sort((a, b) => b.createdAt - a.createdAt);
+    if (stRecs.length === 0) { board.innerHTML = "<p style='color:#888;'>尚無成績</p>"; return; }
+
     stRecs.forEach(r => {
-        let display = (currentConf && currentConf.type === 'time') ? `${Math.floor(r.val/60)}分${r.val%60}秒` : `${r.val}`;
+        let display = (currentConf && currentConf.type === 'time') ? `${Math.floor(r.val / 60)}分${r.val % 60}秒` : `${r.val}`;
         const item = document.createElement('div'); item.className = 'record-item';
         item.innerHTML = `<span><b>${r.team}</b> (👍x${r.likes})<br><small style="color:#aaa;">${display}</small></span><button class="btn btn-danger" style="padding:5px 10px;" data-id="${r.id}">刪除</button>`;
         board.appendChild(item);
     });
     document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', async (e) => {
-        if(confirm("刪除？")) await deleteDoc(doc(db, "records_d2", e.target.getAttribute('data-id')));
+        if (confirm("刪除？")) await deleteDoc(doc(db, "records_d2", e.target.getAttribute('data-id')));
     }));
 });
 
 // 🌟 即時監聽輸入，超過上限直接強制改回上限值
-document.getElementById('minInput').addEventListener('input', function() {
+document.getElementById('minInput').addEventListener('input', function () {
     let max = (sysSettings && sysSettings.d2_maxMin) ? sysSettings.d2_maxMin : 59;
     if (parseInt(this.value) > max) this.value = max;
 });
-document.getElementById('scoreInput').addEventListener('input', function() {
+document.getElementById('scoreInput').addEventListener('input', function () {
     let max = (sysSettings && sysSettings.d2_maxScore) ? sysSettings.d2_maxScore : 999;
     if (parseInt(this.value) > max) this.value = max;
 });
@@ -102,7 +108,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
         val = (min * 60) + sec;
     } else {
         val = parseInt(document.getElementById('scoreInput').value);
-        if(isNaN(val)) return alert("請輸入數值！");
+        if (isNaN(val)) return alert("請輸入數值！");
     }
 
     try {

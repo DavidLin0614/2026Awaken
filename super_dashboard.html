@@ -1,21 +1,67 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>👑 營會全能總控台</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
-        .tab-btn { flex: 1; padding: 15px; background: rgba(255,255,255,0.1); border: none; color: #aaa; cursor: pointer; font-size: 1.1em; font-weight: bold; border-radius: 5px 5px 0 0; }
-        .tab-btn.active { background: #f39c12; color: white; border-top: 3px solid white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .control-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; }
-        .monitor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
-        .station-box { height: 350px; justify-content: flex-start; }
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .tab-btn.active {
+            background: #f39c12;
+            color: white;
+            border-top: 3px solid white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .control-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .monitor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .station-box {
+            height: 350px;
+            justify-content: flex-start;
+        }
     </style>
 </head>
+
 <body>
     <h1 style="margin-bottom: 10px;">👑 營會全能總控台</h1>
 
@@ -56,11 +102,12 @@
     <div id="score-panel" class="tab-content">
         <div class="control-bar">
             <button class="btn btn-setting" id="score_setBtn">⚙️ 全域系統設定</button>
-            <button class="btn btn-export" onclick="window.location.href='total_scoreboard.html'">📊 前往總分展示頁</button>
+            <button class="btn btn-danger" onclick="window.clearBonus()">💣 一鍵清除手動加分</button>
         </div>
         <div class="glass-card" style="padding: 20px;">
             <h3 style="margin-top:0;">✨ 牧者 / 手動額外加分區</h3>
-            <div id="bonus_monitor" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px;"></div>
+            <div id="bonus_monitor"
+                style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px;"></div>
         </div>
     </div>
 
@@ -117,7 +164,9 @@
         <div class="modal-content">
             <h2>📅 匯入 Excel 賽程表</h2>
             <textarea id="scheduleInput" rows="6" placeholder="從 Excel 複製貼上..."></textarea>
-            <div class="modal-btns"><button class="btn btn-add" style="flex:1;" id="save_d3_schedule">💾 解析儲存</button><button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_d3_schedule')">取消</button></div>
+            <div class="modal-btns"><button class="btn btn-add" style="flex:1;" id="save_d3_schedule">💾
+                    解析儲存</button><button class="btn btn-danger" style="flex:1;"
+                    onclick="closeModal('modal_d3_schedule')">取消</button></div>
         </div>
     </div>
 
@@ -125,7 +174,9 @@
         <div class="modal-content">
             <h2>⚙️ 總分控台設定</h2>
             <div class="form-group"><label>👥 營會總隊伍數</label><input type="number" id="set_global_teams"></div>
-            <div class="modal-btns"><button class="btn btn-export" style="flex:1;" id="save_global_settings">💾 儲存</button><button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_score_settings')">取消</button></div>
+            <div class="modal-btns"><button class="btn btn-export" style="flex:1;" id="save_global_settings">💾
+                    儲存</button><button class="btn btn-danger" style="flex:1;"
+                    onclick="closeModal('modal_score_settings')">取消</button></div>
         </div>
     </div>
 
@@ -137,7 +188,9 @@
             <div class="form-group"><label>關卡</label><select id="add_d2_st"></select></div>
             <div class="form-group"><label>隊伍</label><select id="add_d2_team"></select></div>
             <div class="form-group"><label>數值 (時間請換算為總秒數)</label><input type="number" id="add_d2_val"></div>
-            <div class="modal-btns"><button class="btn btn-add" style="flex:1;" id="save_d2_record">🚀 儲存紀錄</button><button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_add_d2')">取消</button></div>
+            <div class="modal-btns"><button class="btn btn-add" style="flex:1;" id="save_d2_record">🚀
+                    儲存紀錄</button><button class="btn btn-danger" style="flex:1;"
+                    onclick="closeModal('modal_add_d2')">取消</button></div>
         </div>
     </div>
 
@@ -154,7 +207,9 @@
                 <div class="form-group"><label>隊伍 B</label><select id="add_d3_teamB"></select></div>
             </div>
             <div class="form-group"><label style="color:#e74c3c;">獲勝隊伍</label><select id="add_d3_winner"></select></div>
-            <div class="modal-btns"><button class="btn btn-add" style="flex:1;" id="save_d3_record">🚀 儲存紀錄</button><button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_add_d3')">取消</button></div>
+            <div class="modal-btns"><button class="btn btn-add" style="flex:1;" id="save_d3_record">🚀
+                    儲存紀錄</button><button class="btn btn-danger" style="flex:1;"
+                    onclick="closeModal('modal_add_d3')">取消</button></div>
         </div>
     </div>
 
@@ -169,4 +224,5 @@
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     </script>
 </body>
+
 </html>
