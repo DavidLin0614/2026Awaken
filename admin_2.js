@@ -14,7 +14,6 @@ lockOverlay.style = "display:none; position:fixed; top:0; left:0; width:100%; he
 lockOverlay.innerHTML = "🔒<br>輸入已鎖定<br><span style='font-size:0.5em; color:#ccc; margin-top:10px;'>等待總控台開放</span>";
 document.body.appendChild(lockOverlay);
 
-// 更新輪次與賽程
 // 🌟 更新輪次，並且推送到資料庫給總控台看
 function updateRoundUI() {
     document.getElementById('roundText').innerText = `第 ${currentRound} 輪`;
@@ -28,11 +27,10 @@ function updateRoundUI() {
     }
     updateWinnerSelect();
 
-    // 🌟 將關主目前的輪次推送到資料庫
+    // 🌟 精準推播目前輪次，解決總控台不會跟著變的問題
     if(sysSettings) {
-        let newRounds = { ...(sysSettings.d3_currRounds || {}) };
-        newRounds[currentStation] = currentRound;
-        setDoc(doc(db, "settings_global", "global"), { d3_currRounds: newRounds }, { merge: true }).catch(e=>{});
+        let fieldName = `d3_currRounds.${currentStation}`;
+        updateDoc(doc(db, "settings_global", "global"), { [fieldName]: currentRound }).catch(e=>{});
     }
 }
 
@@ -141,14 +139,24 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
 
     try {
         document.getElementById('submitBtn').disabled = true;
-        await addDoc(collection(db, "records_d3"), {
-            station: currentStation, round: currentRound, teamA, teamB, winner,
-            loser: (winner === teamA ? teamB : teamA),
-            likesA, likesB, createdAt: Date.now()
+        
+        // 1. 送出戰績
+        await addDoc(collection(db, "records_d3"), { 
+            station: currentStation, round: currentRound, teamA, teamB, winner, 
+            loser: (winner === teamA ? teamB : teamA), 
+            likesA, likesB, createdAt: Date.now() 
         });
-        statusBtn.click(); // 自動切換為綠燈
+
+        // 2. 手動修改為綠燈 (不使用 click() 避免非同步衝突報錯)
+        isOccupied = false;
+        let newStatus = { ...sysSettings.d3_status };
+        newStatus[currentStation] = 'green';
+        await updateDoc(doc(db, "settings_global", "global"), { d3_status: newStatus });
+        
         alert("✅ 送出成功！即將自動跳至下一輪");
         currentRound++; updateRoundUI(); // 自動跳轉下一輪
-    } catch (error) { alert("發生錯誤"); }
+    } catch (error) { 
+        alert("發生錯誤，請檢查網路！"); 
+    }
     document.getElementById('submitBtn').disabled = false;
 });
