@@ -442,23 +442,22 @@ input[type="number"] { -moz-appearance: textfield; }
 .table-container { 
     width: 100%; overflow-x: auto; margin-top: 10px; 
     border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); 
-    /* 移除了 max-height 與 overflow-y，讓它自然貼合螢幕 */
 }
 table { 
     width: 100%; border-collapse: separate; border-spacing: 0; 
-    text-align: center; font-size: 0.85em; /* 🌟 縮小整體字體比例 */
+    text-align: center; font-size: 0.85em; 
     white-space: nowrap; color: white; 
+    margin-bottom: 12px; /* 🌟 讓最後一列與底部的滑動條之間留出呼吸空間 */
 }
 th, td { 
     border-bottom: 1px solid rgba(255,255,255,0.2); 
     border-right: 1px solid rgba(255,255,255,0.2); 
-    padding: 6px 7px; /* 🌟 大幅縮減上下空間，讓格子變扁，擠下15隊 */
+    padding: 6px 7px; /* 🌟 依照你的要求微調上下與左右間距 */
     min-width: 70px; 
 }
 thead th { 
     background: #1c2833; color: #f1c40f; font-weight: bold; 
     border-bottom: 2px solid #f1c40f; 
-    /* 🌟 移除了 position: sticky; 解除上方計分項目的凍結 */
 }
 
 /* 🌟 嚴格控制左側兩欄的寬度，確保凍結不跑版 */
