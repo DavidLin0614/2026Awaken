@@ -438,29 +438,41 @@ input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 input[type="number"] { -moz-appearance: textfield; }
 
-/* 🌟 總控台：Excel 總積分矩陣大表樣式 (加入凍結窗格) */
+/* 🌟 總控台：Excel 總積分矩陣大表樣式 (縮小比例、僅凍結左側) */
 .table-container { 
-    width: 100%; overflow-x: auto; margin-top: 15px; 
+    width: 100%; overflow-x: auto; margin-top: 10px; 
     border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); 
-    max-height: 600px; overflow-y: auto; /* 加入垂直滾動 */
+    /* 移除了 max-height 與 overflow-y，讓它自然貼合螢幕 */
 }
 table { 
     width: 100%; border-collapse: separate; border-spacing: 0; 
-    text-align: center; font-size: 0.95em; white-space: nowrap; color: white; 
+    text-align: center; font-size: 0.85em; /* 🌟 縮小整體字體比例 */
+    white-space: nowrap; color: white; 
 }
 th, td { 
     border-bottom: 1px solid rgba(255,255,255,0.2); 
     border-right: 1px solid rgba(255,255,255,0.2); 
-    padding: 10px 8px; min-width: 80px; 
+    padding: 4px 5px; /* 🌟 大幅縮減上下空間，讓格子變扁，擠下15隊 */
+    min-width: 70px; 
 }
-/* 凍結頂部表頭 */
-thead th { background: #1c2833; color: #f1c40f; font-weight: bold; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid #f1c40f; }
+thead th { 
+    background: #1c2833; color: #f1c40f; font-weight: bold; 
+    border-bottom: 2px solid #f1c40f; 
+    /* 🌟 移除了 position: sticky; 解除上方計分項目的凍結 */
+}
 
-/* 🌟 凍結左側第一欄 (隊伍) 與第二欄 (總合) */
-.col-fixed-1 { position: sticky; left: 0; background: #1a252f; z-index: 11; font-weight: bold; min-width: 80px; border-right: 2px solid #f39c12; }
-.col-fixed-2 { position: sticky; left: 80px; background: rgba(46, 204, 113, 0.9); color: white; z-index: 11; font-weight: bold; min-width: 80px; border-right: 2px solid #f39c12; }
-/* 表頭交集點的 Z-index 要最高 */
-thead .col-fixed-1, thead .col-fixed-2 { z-index: 12; background: #11181f; }
+/* 🌟 嚴格控制左側兩欄的寬度，確保凍結不跑版 */
+.col-fixed-1 { 
+    position: sticky; left: 0; width: 75px; min-width: 75px; 
+    background: #1a252f; z-index: 5; font-weight: bold; border-right: 2px solid #f39c12; 
+}
+.col-fixed-2 { 
+    position: sticky; left: 75px; width: 75px; min-width: 75px; 
+    background: rgba(46, 204, 113, 0.9); color: white; z-index: 5; font-weight: bold; border-right: 2px solid #f39c12; 
+}
+
+/* 修正表頭交集處的背景色 */
+thead .col-fixed-1, thead .col-fixed-2 { background: #1c2833; }
 
 .col-d2d3 { background: rgba(52, 152, 219, 0.15); color: #3498db; font-weight: bold; }
 tbody tr:hover td { background: rgba(255,255,255,0.1); }
