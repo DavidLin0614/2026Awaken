@@ -307,46 +307,14 @@ document.getElementById('save_bonus_record').addEventListener('click', async () 
 // 🏆 計算總分並動態渲染 Excel 矩陣大表
 // ==========================================
 window.updateScoreSummary = function() {
-    const thead = document.getElementById('tableHead');
     const tbody = document.getElementById('tableBody');
-    if(!tbody || !thead) return;
+    if(!tbody) return;
     
     // 1. 動態建立欄位對應
     let c1 = (sysSettings.cols_d1 || "開幕式,大破冰,小隊時間,晚會,講員額外,額外增減,生活秩序").split(',');
     let c2 = (sysSettings.cols_d2 || "早場,大破冰,晚會,NPC,大地(D2),講員額外,額外增減,生活秩序").split(',');
     let c3 = (sysSettings.cols_d3 || "早場,晚場,NPC,大地(D3),講員額外,額外增減,生活秩序").split(',');
     let c4 = (sysSettings.cols_d4 || "早場,小隊任務,見證,講員,講員額外,額外增減,生活秩序").split(',');
-
-    // 建立下拉選單 (供手動加分用)
-    let bonusSel = document.getElementById('add_bonus_reason');
-    if(bonusSel) {
-        let currVal = bonusSel.value;
-        bonusSel.innerHTML = `
-            <optgroup label="7/2 得分">${c1.map(c=>`<option value="7/2_${c}">${c}</option>`).join('')}</optgroup>
-            <optgroup label="7/3 得分">${c2.map(c=>`<option value="7/3_${c}">${c}</option>`).join('')}</optgroup>
-            <optgroup label="7/4 得分">${c3.map(c=>`<option value="7/4_${c}">${c}</option>`).join('')}</optgroup>
-            <optgroup label="7/5 得分">${c4.map(c=>`<option value="7/5_${c}">${c}</option>`).join('')}</optgroup>
-        `;
-        if(currVal) bonusSel.value = currVal;
-    }
-
-    // 2. 動態生成表頭 (解決跑版)
-    thead.innerHTML = `
-        <tr>
-            <th rowspan="2" class="col-fixed-1">隊伍</th>
-            <th rowspan="2" class="col-fixed-2">總合</th>
-            <th colspan="${c1.length}">7/2 得分</th>
-            <th colspan="${c2.length}">7/3 得分</th>
-            <th colspan="${c3.length}">7/4 得分</th>
-            <th colspan="${c4.length}">7/5 得分</th>
-        </tr>
-        <tr>
-            ${c1.map(c=>`<th>${c}</th>`).join('')}
-            ${c2.map(c=>`<th>${c}</th>`).join('')}
-            ${c3.map(c=>`<th>${c}</th>`).join('')}
-            ${c4.map(c=>`<th>${c}</th>`).join('')}
-        </tr>
-    `;
 
     let allCols = [
         ...c1.map(c => `7/2_${c}`), ...c2.map(c => `7/3_${c}`),
@@ -360,7 +328,7 @@ window.updateScoreSummary = function() {
         allCols.forEach(c => scores[`第${i}隊`][c] = 0);
     }
 
-    // 算 D2 (自動塞入 "7/3_大地(D2)")
+    // 2. 算 D2 (自動塞入 "7/3_大地(D2)")
     let d2Rules = sysSettings.d2_rules || { top1:300, top2:200, top3:100, base:50 };
     let d2LikePts = sysSettings.d2_likePts || 10;
     for(let i=1; i<= (sysSettings.numStations_d2 || 15); i++) {
@@ -381,7 +349,7 @@ window.updateScoreSummary = function() {
     }
     recordsD2.forEach(r => { if(scores[r.team] && r.likes && scores[r.team]["7/3_大地(D2)"] !== undefined) scores[r.team]["7/3_大地(D2)"] += (r.likes * d2LikePts); });
 
-    // 算 D3 (自動塞入 "7/4_大地(D3)")
+    // 3. 算 D3 (自動塞入 "7/4_大地(D3)")
     let d3LikePts = sysSettings.d3_likePts || 10;
     let d3Stats = {};
     for(let i=1; i<=teams; i++) d3Stats[`第${i}隊`] = { wins: 0, losses: 0 };
@@ -393,20 +361,29 @@ window.updateScoreSummary = function() {
     });
     let d3Ranked = Object.keys(d3Stats).map(t => ({ team: t, ...d3Stats[t] })).sort((a,b) => b.wins !== a.wins ? b.wins - a.wins : a.losses - b.losses);
     let d3RankScores = sysSettings.d3_rankScores || {};
+    
+    // 🌟 完全修復 D3 密集排名邏輯 (1,1,1,2,3)
     let currRank = 1;
     d3Ranked.forEach((item, idx) => {
-        if (idx > 0 && item.wins === d3Ranked[idx-1].wins && item.losses === d3Ranked[idx-1].losses) item.rank = d3Ranked[idx-1].rank;
-        else { currRank = idx + 1; item.rank = currRank; }
-        if(scores[item.team] && scores[item.team]["7/4_大地(D3)"] !== undefined) scores[item.team]["7/4_大地(D3)"] += (d3RankScores[item.rank] || 0);
+        if (idx > 0) {
+            if (item.wins !== d3Ranked[idx-1].wins || item.losses !== d3Ranked[idx-1].losses) currRank++;
+        }
+        item.rank = currRank;
+        if(scores[item.team] && scores[item.team]["7/4_大地(D3)"] !== undefined) {
+            scores[item.team]["7/4_大地(D3)"] += (d3RankScores[item.rank] || 0);
+        }
     });
 
-    // 填入加分
+    // 4. 填入各項手動加分
     recordsBonus.forEach(r => { 
-        if(scores[r.team] && scores[r.team][r.reason] !== undefined) scores[r.team][r.reason] += r.val; 
-        else if (scores[r.team] && r.npc && scores[r.team]["7/3_NPC"] !== undefined) scores[r.team]["7/3_NPC"] += r.val; 
+        if(scores[r.team] && scores[r.team][r.reason] !== undefined) {
+            scores[r.team][r.reason] += r.val;
+        } else if (scores[r.team] && r.npc && scores[r.team]["7/3_NPC"] !== undefined) {
+            scores[r.team]["7/3_NPC"] += r.val; 
+        }
     });
 
-    // 計算總和與渲染
+    // 5. 計算總和 & 根據隊伍數字排序
     tbody.innerHTML = "";
     let finalRanking = Object.keys(scores).map(t => {
         let s = scores[t];
@@ -414,6 +391,7 @@ window.updateScoreSummary = function() {
         return { team: t, ...s };
     }).sort((a,b) => parseInt(a.team.replace(/[^0-9]/g, '')) - parseInt(b.team.replace(/[^0-9]/g, ''))); 
 
+    // 6. 渲染 Table
     finalRanking.forEach(s => {
         let rowHtml = `<tr><td class="col-fixed-1">${s.team}</td><td class="col-fixed-2">${s.total}</td>`;
         allCols.forEach(c => {
