@@ -4,7 +4,7 @@ import { getFirestore, collection, onSnapshot, doc } from "https://www.gstatic.c
 const firebaseConfig = { apiKey: "AIzaSyBo5iMRonG0rFu6ZuIBJFXzwnWF9xiAKgQ", authDomain: "awaken-c5fca.firebaseapp.com", projectId: "awaken-c5fca", storageBucket: "awaken-c5fca.firebasestorage.app" };
 const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
-let globalRecords = []; let sysSettings = { numTeams: 15, d3_hidden: false, schedule: {} };
+let globalRecords = []; let sysSettings = { numTeams: 15, d3_hidden: false, schedule: {}, d3_maxRounds: 7 };
 
 const hideOverlay = document.createElement('div');
 hideOverlay.id = "hideOverlay"; hideOverlay.innerHTML = "🏆<br>營會成績結算中<br><span style='font-size:0.5em;'>敬請期待最高榮耀</span>";
@@ -15,18 +15,9 @@ function renderLeaderboard() {
     let teamStats = {}; 
     for(let i=1; i<=sysSettings.numTeams; i++) teamStats[`第${i}隊`] = { wins: 0, losses: 0, likes: 0 };
 
-    // 1. 統計勝負與讚數
     globalRecords.forEach(r => {
-        // 🌟 正確抓取對戰紀錄中的讚數
-        if (r.teamA && teamStats[r.teamA]) {
-            teamStats[r.teamA].likes += (r.likesA || 0);
-        }
-        if (r.teamB && teamStats[r.teamB]) {
-            teamStats[r.teamB].likes += (r.likesB || 0);
-        }
-
-        // 統計勝負
-        if (r.winner) {
+        if (r.isLikeOnly) { if(teamStats[r.team]) teamStats[r.team].likes += r.likes; } 
+        else if (!r.isNPC) {
             if(teamStats[r.winner]) teamStats[r.winner].wins += 1;
             if(teamStats[r.loser]) teamStats[r.loser].losses += 1;
         }
@@ -35,18 +26,25 @@ function renderLeaderboard() {
     let ranked = Object.keys(teamStats).map(t => ({ team: t, ...teamStats[t] }));
     ranked.sort((a, b) => { if(b.wins !== a.wins) return b.wins - a.wins; return a.losses - b.losses; });
 
-    let currentRank = 1;
+    // 🌟 修正的密集排名 (Dense Rank：1,1,1,2,3)
+    let currRank = 1;
     ranked.forEach((item, index) => {
-        if (index > 0 && item.wins === ranked[index-1].wins && item.losses === ranked[index-1].losses) item.rank = ranked[index-1].rank;
-        else { currentRank = index + 1; item.rank = currentRank; }
+        if (index > 0) {
+            if (item.wins !== ranked[index-1].wins || item.losses !== ranked[index-1].losses) currRank++;
+        }
+        item.rank = currRank;
 
         let teamLastRound = 0;
         globalRecords.forEach(r => {
             if((r.teamA === item.team || r.teamB === item.team) && r.round > teamLastRound) teamLastRound = r.round;
         });
 
+        // 🌟 強制鎖定在最高輪次
         let nextRound = teamLastRound + 1;
-        let nextStationText = "🏁 已完賽";
+        let maxR = sysSettings.d3_maxRounds || 7;
+        if(nextRound > maxR) nextRound = maxR; 
+
+        let nextStationText = "讀取中";
         if(sysSettings.schedule && sysSettings.schedule[nextRound]) {
             for(let st in sysSettings.schedule[nextRound]) {
                 if(sysSettings.schedule[nextRound][st].a === item.team || sysSettings.schedule[nextRound][st].b === item.team) {
@@ -57,7 +55,6 @@ function renderLeaderboard() {
 
         let rankStr = item.rank <= 3 ? ["🥇","🥈","🥉"][item.rank-1] : item.rank;
         
-        // 🌟 完美五等分排版
         board.innerHTML += `
             <div class="leaderboard-row">
                 <div class="rank-badge">${rankStr}</div>
@@ -77,8 +74,6 @@ onSnapshot(doc(db, "settings_global", "global"), (docSnap) => {
         renderLeaderboard(); 
     }
 });
-
-// 🌟 改監聽 records_d3
 onSnapshot(collection(db, "records_d3"), (snapshot) => {
     globalRecords = []; snapshot.forEach((doc) => globalRecords.push(doc.data())); renderLeaderboard(); 
 });

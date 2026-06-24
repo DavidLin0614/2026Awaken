@@ -49,8 +49,11 @@ function updateLikeUI() {
     document.getElementById('likeBtnB').disabled = (!isOccupied || totalGiven >= max);
 }
 
-document.getElementById('prevRoundBtn').addEventListener('click', () => { if (currentRound > 1) { currentRound--; updateRoundUI(); } });
-document.getElementById('nextRoundBtn').addEventListener('click', () => { currentRound++; updateRoundUI(); });
+document.getElementById('prevRoundBtn').addEventListener('click', () => { if(currentRound > 1) { currentRound--; updateRoundUI(); }});
+document.getElementById('nextRoundBtn').addEventListener('click', () => { 
+    let maxR = sysSettings.d3_maxRounds || 7;
+    if(currentRound < maxR) { currentRound++; updateRoundUI(); }
+});
 
 // --- 替換這一段 ---
 document.getElementById('likeBtnA').addEventListener('click', () => {
@@ -154,7 +157,10 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
         await updateDoc(doc(db, "settings_global", "global"), { d3_status: newStatus });
         
         alert("✅ 送出成功！即將自動跳至下一輪");
-        currentRound++; updateRoundUI(); // 自動跳轉下一輪
+        let maxR = sysSettings.d3_maxRounds || 7;
+        if(currentRound < maxR) {
+            currentRound++; updateRoundUI(); // 自動跳轉下一輪
+        }
     } catch (error) { 
         alert("發生錯誤，請檢查網路！"); 
     }

@@ -432,3 +432,34 @@ th { background: rgba(255,255,255,0.1); color: #f1c40f; font-weight: bold; posit
 .col-total { font-weight: bold; color: #2ecc71; font-size: 1.1em; background: rgba(46, 204, 113, 0.1); }
 .col-d2d3 { background: rgba(52, 152, 219, 0.1); color: #3498db; font-weight: bold; }
 tbody tr:hover { background: rgba(255,255,255,0.1); }
+
+/* 🌟 隱藏所有數字輸入框的上下箭頭 */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; }
+
+/* 🌟 總控台：Excel 總積分矩陣大表樣式 (凍結窗格與等寬) */
+.table-container { 
+    width: 100%; overflow-x: auto; margin-top: 15px; 
+    border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); 
+}
+table { 
+    width: 100%; border-collapse: separate; border-spacing: 0; 
+    text-align: center; font-size: 0.9em; white-space: nowrap; color: white; 
+}
+th, td { 
+    border-bottom: 1px solid rgba(255,255,255,0.2); 
+    border-right: 1px solid rgba(255,255,255,0.2); 
+    padding: 8px 5px; min-width: 70px; /* 統一欄寬 */
+}
+th { background: #1c2833; color: #f1c40f; font-weight: bold; position: sticky; top: 0; z-index: 10; }
+
+/* 凍結前兩欄 (隊伍與總和) */
+.col-fixed-1 { position: sticky; left: 0; background: #1a252f; z-index: 11; font-weight: bold; min-width: 80px; }
+.col-fixed-2 { position: sticky; left: 80px; background: rgba(46, 204, 113, 0.15); z-index: 11; font-weight: bold; color: #2ecc71; min-width: 60px; }
+thead .col-fixed-1, thead .col-fixed-2 { z-index: 12; background: #1c2833; }
+
+/* 每天的大分區粗線 */
+.day-border { border-right: 3px solid #f39c12 !important; }
+.col-d2d3 { background: rgba(52, 152, 219, 0.1); color: #3498db; font-weight: bold; }
+tbody tr:hover { background: rgba(255,255,255,0.1); }

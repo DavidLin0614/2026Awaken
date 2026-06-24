@@ -129,6 +129,7 @@ document.getElementById('d3_setBtn').addEventListener('click', () => {
     document.getElementById('set_d3_stations').value = sysSettings.numStations_d3 || 10;
     document.getElementById('set_d3_maxLikes').value = sysSettings.d3_maxLikes || 3;
     document.getElementById('set_d3_likePts').value = sysSettings.d3_likePts || 10;
+    document.getElementById('set_d3_maxRounds').value = sysSettings.d3_maxRounds || 7;
 
     let rankHtml = '';
     for (let i = 1; i <= (sysSettings.numTeams || 15); i++) {
@@ -162,7 +163,8 @@ document.getElementById('save_d3_settings').addEventListener('click', async () =
     let rankScores = {};
     for (let i = 1; i <= (sysSettings.numTeams || 15); i++) rankScores[i] = parseInt(document.getElementById(`d3_rank_${i}`).value) || 0;
     await setDoc(doc(db, "settings_global", "global"), {
-        numStations_d3: parseInt(document.getElementById('set_d3_stations').value), d3_maxLikes: parseInt(document.getElementById('set_d3_maxLikes').value), d3_likePts: parseInt(document.getElementById('set_d3_likePts').value), d3_rankScores: rankScores
+        numStations_d3: parseInt(document.getElementById('set_d3_stations').value),
+        d3_maxRounds: parseInt(document.getElementById('set_d3_maxRounds').value), d3_maxLikes: parseInt(document.getElementById('set_d3_maxLikes').value), d3_likePts: parseInt(document.getElementById('set_d3_likePts').value), d3_rankScores: rankScores
     }, { merge: true });
     document.getElementById('modal_d3_settings').style.display = 'none';
 });
@@ -302,10 +304,10 @@ window.updateScoreSummary = function() {
     let teams = sysSettings.numTeams || 15;
     let scores = {};
     const cols = [
-        "7/2_開幕式", "7/2_大破冰", "7/2_小隊時間", "7/2_晚會", "7/2_講員額外", "7/2_額外增減",
-        "7/3_早場", "7/3_大破冰", "7/3_晚會", "7/3_NPC加分", "d2_main", "7/3_講員額外", "7/3_額外增減",
-        "7/4_下午場", "7/4_晚場", "7/4_NPC", "d3_main", "7/4_講員額外", "7/4_額外增減",
-        "7/5_早場", "7/5_小隊任務", "7/5_見證", "7/5_講員", "7/5_講員額外", "7/5_額外增減"
+        "7/2_開幕式", "7/2_大破冰", "7/2_小隊時間", "7/2_晚會", "7/2_講員額外", "7/2_額外增減", "7/2_生活秩序",
+        "7/3_早場", "7/3_大破冰", "7/3_晚會", "7/3_NPC", "d2_main", "7/3_講員額外", "7/3_額外增減", "7/3_生活秩序",
+        "7/4_早場", "7/4_晚場", "7/4_NPC", "d3_main", "7/4_講員額外", "7/4_額外增減", "7/4_生活秩序",
+        "7/5_早場", "7/5_小隊任務", "7/5_見證", "7/5_講員", "7/5_講員額外", "7/5_額外增減", "7/5_生活秩序"
     ];
 
     for(let i=1; i<=teams; i++) {
@@ -356,8 +358,10 @@ window.updateScoreSummary = function() {
     let d3RankScores = sysSettings.d3_rankScores || {};
     let currRank = 1;
     d3Ranked.forEach((item, idx) => {
-        if (idx > 0 && item.wins === d3Ranked[idx-1].wins && item.losses === d3Ranked[idx-1].losses) item.rank = d3Ranked[idx-1].rank;
-        else { currRank = idx + 1; item.rank = currRank; }
+        if (idx > 0) {
+            if (item.wins !== d3Ranked[idx-1].wins || item.losses !== d3Ranked[idx-1].losses) currRank++;
+        }
+        item.rank = currRank;
         if(scores[item.team]) scores[item.team].d3_main += (d3RankScores[item.rank] || 0);
     });
 
@@ -437,3 +441,19 @@ window.runCornerTest = async () => {
     }
     alert("✅ 測試資料灌入完畢！畫面將自動更新。");
 };
+
+document.getElementById('exportAllBtn').addEventListener('click', () => {
+    let csv = "\uFEFF大類別,子項目,關卡/輪次,對戰隊伍,結果數值,紀錄者,時間\n";
+    recordsD2.forEach(r => {
+        csv += `D2闖關紀錄,-,第${r.station}關,${r.team},${r.val} (👍x${r.likes||0}),關主,${new Date(r.createdAt).toLocaleString()}\n`;
+    });
+    recordsD3.forEach(r => {
+        csv += `D3對戰紀錄,第${r.round}輪,第${r.station}關,${r.teamA} vs ${r.teamB},${r.winner} 勝,關主,${new Date(r.createdAt).toLocaleString()}\n`;
+    });
+    recordsBonus.forEach(r => {
+        csv += `額外加分,${r.reason},-,${r.team},${r.val},${r.npc||'總控台'},${new Date(r.timestamp).toLocaleString()}\n`;
+    });
+    const link = document.createElement("a"); 
+    link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); 
+    link.download = "全場營會_所有詳細紀錄.csv"; link.click();
+});
