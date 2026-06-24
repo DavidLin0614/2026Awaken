@@ -16,11 +16,13 @@ function renderLeaderboard() {
     for(let i=1; i<=sysSettings.numTeams; i++) teamStats[`第${i}隊`] = { wins: 0, losses: 0, likes: 0 };
 
     globalRecords.forEach(r => {
-        if (r.isLikeOnly) { if(teamStats[r.team]) teamStats[r.team].likes += r.likes; } 
-        else if (!r.isNPC) {
-            if(teamStats[r.winner]) teamStats[r.winner].wins += 1;
-            if(teamStats[r.loser]) teamStats[r.loser].losses += 1;
-        }
+        // 統計勝負
+        if(teamStats[r.winner]) teamStats[r.winner].wins += 1;
+        if(teamStats[r.loser]) teamStats[r.loser].losses += 1;
+        
+        // 統計雙方拿到的讚數
+        if(teamStats[r.teamA] && r.likesA) teamStats[r.teamA].likes += r.likesA;
+        if(teamStats[r.teamB] && r.likesB) teamStats[r.teamB].likes += r.likesB;
     });
 
     let ranked = Object.keys(teamStats).map(t => ({ team: t, ...teamStats[t] }));
