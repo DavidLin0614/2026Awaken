@@ -111,25 +111,8 @@
             <h3 style="margin-top:0; color:#f1c40f;">📊 營會總積分矩陣大表 (可左右滑動)</h3>
             <div class="table-container">
                 <table id="excelTable">
-                    <thead>
-                        <tr>
-                            <th rowspan="2">隊伍</th>
-                            <th rowspan="2" class="col-total">總合</th>
-                            <th colspan="6">7/2 得分</th>
-                            <th colspan="7">7/3 得分</th>
-                            <th colspan="6">7/4 得分</th>
-                            <th colspan="6">7/5 得分</th>
-                        </tr>
-                        <tr>
-                            <!-- 7/2 -->
-                            <th>開幕式</th><th>大破冰</th><th>小隊時間</th><th>晚會</th><th>講員額外</th><th>額外增減</th>
-                            <!-- 7/3 -->
-                            <th>早場</th><th>大破冰</th><th>晚會</th><th>NPC加分</th><th class="col-d2d3">大地(D2)</th><th>講員額外</th><th>額外增減</th>
-                            <!-- 7/4 -->
-                            <th>下午場</th><th>晚場</th><th>NPC</th><th class="col-d2d3">大地(D3)</th><th>講員額外</th><th>額外增減</th>
-                            <!-- 7/5 -->
-                            <th>早場</th><th>小隊任務</th><th>見證</th><th>講員</th><th>講員額外</th><th>額外增減</th>
-                        </tr>
+                    <thead id="tableHead">
+                        <!-- 表頭由程式自動生成 -->
                     </thead>
                     <tbody id="tableBody">
                         <!-- 數據自動生成 -->
@@ -146,6 +129,7 @@
             <div class="form-row">
                 <div class="form-group"><label>🚩 總關卡數</label><input type="number" id="set_d2_stations"></div>
                 <div class="form-group"><label>⏱️ 最大分鐘(防呆)</label><input type="number" id="set_d2_maxMin"></div>
+                <div class="form-group"><label>⏱️ 最大秒數(防呆)</label><input type="number" id="set_d2_maxSec" value="59"></div>
                 <div class="form-group"><label>🎯 最大分數(防呆)</label><input type="number" id="set_d2_maxScore"></div>
             </div>
             <div class="form-row">
@@ -199,13 +183,22 @@
         </div>
     </div>
 
+    <!-- 全域(總分)與自定義項目設定 Modal -->
     <div class="modal-overlay" id="modal_score_settings">
         <div class="modal-content">
             <h2>⚙️ 總分控台設定</h2>
             <div class="form-group"><label>👥 營會總隊伍數</label><input type="number" id="set_global_teams"></div>
-            <div class="modal-btns"><button class="btn btn-export" style="flex:1;" id="save_global_settings">💾
-                    儲存</button><button class="btn btn-danger" style="flex:1;"
-                    onclick="closeModal('modal_score_settings')">取消</button></div>
+            <hr style="border:1px dashed #7f8c8d; margin:15px 0;">
+            <h3 style="color:#f1c40f; margin-top:0;">📝 自定義每日計分項目 (請用逗號分隔)</h3>
+            <p style="font-size:0.8em; color:#aaa; margin-top:-5px;">系統保留字：「大地(D2)」與「大地(D3)」會自動匯入遊戲成績。</p>
+            <div class="form-group"><label>7/2 項目</label><input type="text" id="set_cols_d1"></div>
+            <div class="form-group"><label>7/3 項目</label><input type="text" id="set_cols_d2"></div>
+            <div class="form-group"><label>7/4 項目</label><input type="text" id="set_cols_d3"></div>
+            <div class="form-group"><label>7/5 項目</label><input type="text" id="set_cols_d4"></div>
+            <div class="modal-btns">
+                <button class="btn btn-export" style="flex:1;" id="save_global_settings">💾 儲存</button>
+                <button class="btn btn-danger" style="flex:1;" onclick="closeModal('modal_score_settings')">取消</button>
+            </div>
         </div>
     </div>
 

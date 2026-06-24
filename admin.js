@@ -82,8 +82,15 @@ onSnapshot(collection(db, "records_d2"), (snapshot) => {
     }));
 });
 
+// 🌟 修正的即時防呆監聽器
 document.getElementById('minInput').addEventListener('input', function () {
-    let max = sysSettings.d2_maxMin || 59; if (parseInt(this.value) > max) this.value = max;
+    let max = sysSettings.d2_maxMin !== undefined ? sysSettings.d2_maxMin : 59; 
+    if (parseInt(this.value) > max) this.value = max;
+});
+// 👇 新增秒數的防呆
+document.getElementById('secInput').addEventListener('input', function () {
+    let maxS = sysSettings.d2_maxSec !== undefined ? sysSettings.d2_maxSec : 59; 
+    if (parseInt(this.value) > maxS) this.value = maxS;
 });
 document.getElementById('scoreInput').addEventListener('input', function () {
     let max = sysSettings.d2_maxScore || 999; if (parseInt(this.value) > max) this.value = max;

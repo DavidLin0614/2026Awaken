@@ -143,6 +143,10 @@ document.getElementById('d3_setBtn').addEventListener('click', () => {
 document.getElementById('d3_scheduleBtn').addEventListener('click', () => document.getElementById('modal_d3_schedule').style.display = 'flex');
 document.getElementById('score_setBtn').addEventListener('click', () => {
     document.getElementById('set_global_teams').value = sysSettings.numTeams || 15;
+    document.getElementById('set_cols_d1').value = sysSettings.cols_d1 || "開幕式,大破冰,小隊時間,晚會,講員額外,額外增減,生活秩序";
+    document.getElementById('set_cols_d2').value = sysSettings.cols_d2 || "早場,大破冰,晚會,NPC,大地(D2),講員額外,額外增減,生活秩序";
+    document.getElementById('set_cols_d3').value = sysSettings.cols_d3 || "早場,晚場,NPC,大地(D3),講員額外,額外增減,生活秩序";
+    document.getElementById('set_cols_d4').value = sysSettings.cols_d4 || "早場,小隊任務,見證,講員,講員額外,額外增減,生活秩序";
     document.getElementById('modal_score_settings').style.display = 'flex';
 });
 
@@ -170,7 +174,13 @@ document.getElementById('save_d3_settings').addEventListener('click', async () =
 });
 
 document.getElementById('save_global_settings').addEventListener('click', async () => {
-    await setDoc(doc(db, "settings_global", "global"), { numTeams: parseInt(document.getElementById('set_global_teams').value) }, { merge: true });
+    await setDoc(doc(db, "settings_global", "global"), { 
+        numTeams: parseInt(document.getElementById('set_global_teams').value),
+        cols_d1: document.getElementById('set_cols_d1').value.trim(),
+        cols_d2: document.getElementById('set_cols_d2').value.trim(),
+        cols_d3: document.getElementById('set_cols_d3').value.trim(),
+        cols_d4: document.getElementById('set_cols_d4').value.trim(),
+    }, { merge: true });
     document.getElementById('modal_score_settings').style.display = 'none';
 });
 
@@ -294,100 +304,121 @@ document.getElementById('save_bonus_record').addEventListener('click', async () 
 });
 
 // ==========================================
-// 🏆 計算總分並渲染 Excel 矩陣大表
+// 🏆 計算總分並動態渲染 Excel 矩陣大表
 // ==========================================
 window.updateScoreSummary = function() {
+    const thead = document.getElementById('tableHead');
     const tbody = document.getElementById('tableBody');
-    if(!tbody) return;
-    tbody.innerHTML = "";
+    if(!tbody || !thead) return;
+    
+    // 1. 動態建立欄位對應
+    let c1 = (sysSettings.cols_d1 || "開幕式,大破冰,小隊時間,晚會,講員額外,額外增減,生活秩序").split(',');
+    let c2 = (sysSettings.cols_d2 || "早場,大破冰,晚會,NPC,大地(D2),講員額外,額外增減,生活秩序").split(',');
+    let c3 = (sysSettings.cols_d3 || "早場,晚場,NPC,大地(D3),講員額外,額外增減,生活秩序").split(',');
+    let c4 = (sysSettings.cols_d4 || "早場,小隊任務,見證,講員,講員額外,額外增減,生活秩序").split(',');
+
+    // 建立下拉選單 (供手動加分用)
+    let bonusSel = document.getElementById('add_bonus_reason');
+    if(bonusSel) {
+        let currVal = bonusSel.value;
+        bonusSel.innerHTML = `
+            <optgroup label="7/2 得分">${c1.map(c=>`<option value="7/2_${c}">${c}</option>`).join('')}</optgroup>
+            <optgroup label="7/3 得分">${c2.map(c=>`<option value="7/3_${c}">${c}</option>`).join('')}</optgroup>
+            <optgroup label="7/4 得分">${c3.map(c=>`<option value="7/4_${c}">${c}</option>`).join('')}</optgroup>
+            <optgroup label="7/5 得分">${c4.map(c=>`<option value="7/5_${c}">${c}</option>`).join('')}</optgroup>
+        `;
+        if(currVal) bonusSel.value = currVal;
+    }
+
+    // 2. 動態生成表頭 (解決跑版)
+    thead.innerHTML = `
+        <tr>
+            <th rowspan="2" class="col-fixed-1">隊伍</th>
+            <th rowspan="2" class="col-fixed-2">總合</th>
+            <th colspan="${c1.length}">7/2 得分</th>
+            <th colspan="${c2.length}">7/3 得分</th>
+            <th colspan="${c3.length}">7/4 得分</th>
+            <th colspan="${c4.length}">7/5 得分</th>
+        </tr>
+        <tr>
+            ${c1.map(c=>`<th>${c}</th>`).join('')}
+            ${c2.map(c=>`<th>${c}</th>`).join('')}
+            ${c3.map(c=>`<th>${c}</th>`).join('')}
+            ${c4.map(c=>`<th>${c}</th>`).join('')}
+        </tr>
+    `;
+
+    let allCols = [
+        ...c1.map(c => `7/2_${c}`), ...c2.map(c => `7/3_${c}`),
+        ...c3.map(c => `7/4_${c}`), ...c4.map(c => `7/5_${c}`)
+    ];
 
     let teams = sysSettings.numTeams || 15;
     let scores = {};
-    const cols = [
-        "7/2_開幕式", "7/2_大破冰", "7/2_小隊時間", "7/2_晚會", "7/2_講員額外", "7/2_額外增減", "7/2_生活秩序",
-        "7/3_早場", "7/3_大破冰", "7/3_晚會", "7/3_NPC", "d2_main", "7/3_講員額外", "7/3_額外增減", "7/3_生活秩序",
-        "7/4_早場", "7/4_晚場", "7/4_NPC", "d3_main", "7/4_講員額外", "7/4_額外增減", "7/4_生活秩序",
-        "7/5_早場", "7/5_小隊任務", "7/5_見證", "7/5_講員", "7/5_講員額外", "7/5_額外增減", "7/5_生活秩序"
-    ];
-
     for(let i=1; i<=teams; i++) {
         scores[`第${i}隊`] = { total: 0 };
-        cols.forEach(c => scores[`第${i}隊`][c] = 0);
+        allCols.forEach(c => scores[`第${i}隊`][c] = 0);
     }
 
+    // 算 D2 (自動塞入 "7/3_大地(D2)")
     let d2Rules = sysSettings.d2_rules || { top1:300, top2:200, top3:100, base:50 };
     let d2LikePts = sysSettings.d2_likePts || 10;
-    
     for(let i=1; i<= (sysSettings.numStations_d2 || 15); i++) {
         let conf = sysSettings.d2_configs ? sysSettings.d2_configs[i] : { type:'time' };
-        let maxVal = (conf.type === 'time') ? ((sysSettings.d2_maxMin||59) * 60 + 59) : (sysSettings.d2_maxScore||999);
+        let maxVal = (conf.type === 'time') ? ((sysSettings.d2_maxMin||59) * 60 + (sysSettings.d2_maxSec||59)) : (sysSettings.d2_maxScore||999);
         let stRecs = recordsD2.filter(r => r.station === i && !r.isLikeOnly && r.val >= 0 && r.val <= maxVal);
-        
         let teamBest = {};
         stRecs.forEach(r => {
             if (!teamBest[r.team]) teamBest[r.team] = r.val;
-            else {
-                if (conf.type === 'time') teamBest[r.team] = Math.min(teamBest[r.team], r.val);
-                else teamBest[r.team] = Math.max(teamBest[r.team], r.val);
-            }
+            else teamBest[r.team] = (conf.type === 'time') ? Math.min(teamBest[r.team], r.val) : Math.max(teamBest[r.team], r.val);
         });
-
-        let uniqueRecs = Object.keys(teamBest).map(t => ({ team: t, val: teamBest[t] }));
-        uniqueRecs.sort((a,b) => conf.type === 'time' ? a.val - b.val : b.val - a.val);
-
+        let uniqueRecs = Object.keys(teamBest).map(t => ({ team: t, val: teamBest[t] })).sort((a,b) => conf.type === 'time' ? a.val - b.val : b.val - a.val);
         uniqueRecs.forEach((r, idx) => {
             if(!scores[r.team]) return;
-            if(idx === 0) scores[r.team].d2_main += d2Rules.top1;
-            else if(idx === 1) scores[r.team].d2_main += d2Rules.top2;
-            else if(idx === 2) scores[r.team].d2_main += d2Rules.top3;
-            else scores[r.team].d2_main += d2Rules.base;
+            let pts = idx===0 ? d2Rules.top1 : (idx===1 ? d2Rules.top2 : (idx===2 ? d2Rules.top3 : d2Rules.base));
+            if(scores[r.team]["7/3_大地(D2)"] !== undefined) scores[r.team]["7/3_大地(D2)"] += pts;
         });
     }
-    recordsD2.forEach(r => { if(scores[r.team] && r.likes) scores[r.team].d2_main += (r.likes * d2LikePts); });
+    recordsD2.forEach(r => { if(scores[r.team] && r.likes && scores[r.team]["7/3_大地(D2)"] !== undefined) scores[r.team]["7/3_大地(D2)"] += (r.likes * d2LikePts); });
 
+    // 算 D3 (自動塞入 "7/4_大地(D3)")
     let d3LikePts = sysSettings.d3_likePts || 10;
     let d3Stats = {};
     for(let i=1; i<=teams; i++) d3Stats[`第${i}隊`] = { wins: 0, losses: 0 };
     recordsD3.forEach(r => {
         if(d3Stats[r.winner]) d3Stats[r.winner].wins++;
         if(d3Stats[r.loser]) d3Stats[r.loser].losses++;
-        if(scores[r.teamA] && r.likesA) scores[r.teamA].d3_main += (r.likesA * d3LikePts);
-        if(scores[r.teamB] && r.likesB) scores[r.teamB].d3_main += (r.likesB * d3LikePts);
+        if(scores[r.teamA] && r.likesA && scores[r.teamA]["7/4_大地(D3)"] !== undefined) scores[r.teamA]["7/4_大地(D3)"] += (r.likesA * d3LikePts);
+        if(scores[r.teamB] && r.likesB && scores[r.teamB]["7/4_大地(D3)"] !== undefined) scores[r.teamB]["7/4_大地(D3)"] += (r.likesB * d3LikePts);
     });
     let d3Ranked = Object.keys(d3Stats).map(t => ({ team: t, ...d3Stats[t] })).sort((a,b) => b.wins !== a.wins ? b.wins - a.wins : a.losses - b.losses);
     let d3RankScores = sysSettings.d3_rankScores || {};
     let currRank = 1;
     d3Ranked.forEach((item, idx) => {
-        if (idx > 0) {
-            if (item.wins !== d3Ranked[idx-1].wins || item.losses !== d3Ranked[idx-1].losses) currRank++;
-        }
-        item.rank = currRank;
-        if(scores[item.team]) scores[item.team].d3_main += (d3RankScores[item.rank] || 0);
+        if (idx > 0 && item.wins === d3Ranked[idx-1].wins && item.losses === d3Ranked[idx-1].losses) item.rank = d3Ranked[idx-1].rank;
+        else { currRank = idx + 1; item.rank = currRank; }
+        if(scores[item.team] && scores[item.team]["7/4_大地(D3)"] !== undefined) scores[item.team]["7/4_大地(D3)"] += (d3RankScores[item.rank] || 0);
     });
 
+    // 填入加分
     recordsBonus.forEach(r => { 
-        if(scores[r.team] && scores[r.team][r.reason] !== undefined) {
-            scores[r.team][r.reason] += r.val;
-        } else if (scores[r.team] && r.npc) {
-            scores[r.team]["7/3_NPC加分"] += r.val;
-        }
+        if(scores[r.team] && scores[r.team][r.reason] !== undefined) scores[r.team][r.reason] += r.val; 
+        else if (scores[r.team] && r.npc && scores[r.team]["7/3_NPC"] !== undefined) scores[r.team]["7/3_NPC"] += r.val; 
     });
 
+    // 計算總和與渲染
+    tbody.innerHTML = "";
     let finalRanking = Object.keys(scores).map(t => {
         let s = scores[t];
-        s.total = cols.reduce((sum, c) => sum + s[c], 0);
+        s.total = allCols.reduce((sum, c) => sum + s[c], 0);
         return { team: t, ...s };
-    }).sort((a,b) => {
-        let numA = parseInt(a.team.replace(/[^0-9]/g, ''));
-        let numB = parseInt(b.team.replace(/[^0-9]/g, ''));
-        return numA - numB;
-    }); 
+    }).sort((a,b) => parseInt(a.team.replace(/[^0-9]/g, '')) - parseInt(b.team.replace(/[^0-9]/g, ''))); 
 
     finalRanking.forEach(s => {
-        let rowHtml = `<tr><td><b>${s.team}</b></td><td class="col-total">${s.total}</td>`;
-        cols.forEach(c => {
+        let rowHtml = `<tr><td class="col-fixed-1">${s.team}</td><td class="col-fixed-2">${s.total}</td>`;
+        allCols.forEach(c => {
             let val = s[c] === 0 ? "" : s[c];
-            let cls = (c === 'd2_main' || c === 'd3_main') ? 'class="col-d2d3"' : '';
+            let cls = (c === '7/3_大地(D2)' || c === '7/4_大地(D3)') ? 'class="col-d2d3"' : '';
             rowHtml += `<td ${cls}>${val}</td>`;
         });
         rowHtml += `</tr>`;
