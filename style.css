@@ -477,3 +477,30 @@ thead .col-fixed-1, thead .col-fixed-2 { background: #1c2833; }
 tbody tr:hover td { background: rgba(255,255,255,0.1); }
 tbody tr:hover .col-fixed-1 { background: #2c3e50; }
 tbody tr:hover .col-fixed-2 { background: rgba(46, 204, 113, 1); }
+
+/* ========================================== */
+/* 🗺️ 右上角地圖按鈕與彈窗樣式 */
+/* ========================================== */
+.map-btn {
+    position: fixed; top: 15px; right: 15px; z-index: 100;
+    background: rgba(41, 128, 185, 0.85); color: white; border: 2px solid #f1c40f;
+    padding: 10px 15px; border-radius: 8px; font-weight: bold; font-size: 1.1em;
+    cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+    transition: 0.2s;
+}
+.map-btn:hover { transform: scale(1.05); background: rgba(52, 152, 219, 1); }
+
+.map-modal {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center;
+    backdrop-filter: blur(10px);
+}
+.map-content { position: relative; max-width: 95%; max-height: 95%; display: flex; justify-content: center; align-items: center; }
+.map-content img { width: 100%; height: auto; max-height: 90vh; border-radius: 10px; border: 3px solid #f1c40f; box-shadow: 0 10px 20px rgba(0,0,0,0.8); object-fit: contain; }
+.map-close {
+    position: absolute; top: -15px; right: -15px; background: #e74c3c; color: white;
+    border: 2px solid white; width: 40px; height: 40px; border-radius: 50%;
+    font-size: 1.5em; font-weight: bold; cursor: pointer; display: flex;
+    justify-content: center; align-items: center; box-shadow: 0 4px 8px rgba(0,0,0,0.5); transition: 0.2s;
+}
+.map-close:hover { background: #c0392b; transform: scale(1.1); }
