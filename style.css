@@ -483,7 +483,8 @@ tbody tr:hover .col-fixed-2 { background: rgba(46, 204, 113, 1); }
 /* ========================================== */
 .map-btn {
     position: fixed; top: 15px; right: 15px; z-index: 100;
-    background: rgba(41, 128, 185, 0.85); color: white; border: 2px solid #f1c40f;
+    background: rgba(41, 128, 185, 0.85); color: white; 
+    border: none; /* 🌟 拔除原本的金色框框 */
     padding: 10px 15px; border-radius: 8px; font-weight: bold; font-size: 1.1em;
     cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.5); backdrop-filter: blur(5px);
     transition: 0.2s;
@@ -495,11 +496,19 @@ tbody tr:hover .col-fixed-2 { background: rgba(46, 204, 113, 1); }
     background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center;
     backdrop-filter: blur(10px);
 }
-.map-content { position: relative; max-width: 95%; max-height: 95%; display: flex; justify-content: center; align-items: center; }
-.map-content img { width: 100%; height: auto; max-height: 90vh; border-radius: 10px; border: 3px solid #f1c40f; box-shadow: 0 10px 20px rgba(0,0,0,0.8); object-fit: contain; }
+.map-content { 
+    position: relative; max-width: 95%; max-height: 95%; 
+    display: flex; flex-direction: column; /* 🌟 改成垂直排列，讓叉叉在圖片正下方 */
+    justify-content: center; align-items: center; 
+}
+.map-content img { 
+    width: 100%; height: auto; max-height: 80vh; /* 🌟 稍微縮小圖片最高高度，留空間給下面的叉叉 */
+    border-radius: 10px; border: 3px solid #f1c40f; box-shadow: 0 10px 20px rgba(0,0,0,0.8); object-fit: contain; 
+}
 .map-close {
-    position: absolute; top: -15px; right: -15px; background: #e74c3c; color: white;
-    border: 2px solid white; width: 40px; height: 40px; border-radius: 50%;
+    margin-top: 15px; /* 🌟 和上方地圖保持距離 */
+    background: #e74c3c; color: white;
+    border: 2px solid white; width: 45px; height: 45px; border-radius: 50%;
     font-size: 1.5em; font-weight: bold; cursor: pointer; display: flex;
     justify-content: center; align-items: center; box-shadow: 0 4px 8px rgba(0,0,0,0.5); transition: 0.2s;
 }
