@@ -502,11 +502,13 @@ tbody tr:hover .col-fixed-2 { background: rgba(46, 204, 113, 1); }
     justify-content: center; align-items: center; 
 }
 .map-content img { 
-    width: 100%; height: auto; max-height: 80vh; /* 🌟 稍微縮小圖片最高高度，留空間給下面的叉叉 */
+    width: 100%; height: auto; 
+    max-height: 75vh; /* 🌟 從 80vh 縮減到 75vh，給手機底部的工具列留出更多安全空間 */
     border-radius: 10px; border: 3px solid #f1c40f; box-shadow: 0 10px 20px rgba(0,0,0,0.8); object-fit: contain; 
 }
 .map-close {
-    margin-top: 15px; /* 🌟 和上方地圖保持距離 */
+    margin-top: -20px; /* 🌟 關鍵！用負數讓叉叉直接往上吸，與地圖邊框半重疊 */
+    z-index: 10; /* 確保浮在圖片上方 */
     background: #e74c3c; color: white;
     border: 2px solid white; width: 45px; height: 45px; border-radius: 50%;
     font-size: 1.5em; font-weight: bold; cursor: pointer; display: flex;
