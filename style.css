@@ -503,15 +503,21 @@ tbody tr:hover .col-fixed-2 { background: rgba(46, 204, 113, 1); }
 }
 .map-content img { 
     width: 100%; height: auto; 
-    max-height: 75vh; /* 🌟 從 80vh 縮減到 75vh，給手機底部的工具列留出更多安全空間 */
+    max-height: 80vh; /* 🌟 恢復原本的大地圖尺寸，不縮小了！ */
     border-radius: 10px; border: 3px solid #f1c40f; box-shadow: 0 10px 20px rgba(0,0,0,0.8); object-fit: contain; 
 }
+
 .map-close {
-    margin-top: -20px; /* 🌟 關鍵！用負數讓叉叉直接往上吸，與地圖邊框半重疊 */
-    z-index: 10; /* 確保浮在圖片上方 */
+    margin-top: 15px; /* 🌟 紅色圈圈獨立在地圖正下方，不重疊 */
+    z-index: 10;
     background: #e74c3c; color: white;
     border: 2px solid white; width: 45px; height: 45px; border-radius: 50%;
-    font-size: 1.5em; font-weight: bold; cursor: pointer; display: flex;
-    justify-content: center; align-items: center; box-shadow: 0 4px 8px rgba(0,0,0,0.5); transition: 0.2s;
+    font-size: 1.5em; font-weight: bold; cursor: pointer; 
+    display: flex; justify-content: center; align-items: center; 
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5); transition: 0.2s;
+    
+    /* 🌟 讓「叉叉」往上一點點的魔法在這裡！ */
+    padding-bottom: 4px; /* 利用底部的內邊距，硬是把叉叉往上擠到圓心的位置 */
+    line-height: 1;
 }
 .map-close:hover { background: #c0392b; transform: scale(1.1); }
